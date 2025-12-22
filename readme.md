@@ -108,12 +108,13 @@ This repo currently uses **split playbooks** so individual aspects can be tested
 
 Typical entry playbooks
 
-````bash
+```bash
 ansible-playbook playbooks/homelab.yml --check --diff
 ansible-playbook playbooks/traefik_internal.yml --check --diff
 ansible-playbook playbooks/vps_base.yml --check --diff
 ansible-playbook playbooks/traefik_vps.yml --check --diff
 ansible-playbook playbooks/wireguard.yml --check --diff
+```
 
 ---
 
@@ -126,4 +127,3 @@ ansible-playbook playbooks/wireguard.yml --check --diff
 ## Status
 
 This is an actively used personal homelab repository. Structure and roles evolve over time.
-
