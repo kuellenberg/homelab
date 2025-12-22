@@ -1,0 +1,38 @@
+---
+- name: Ensure Vaultwarden directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ vaultwarden.uid }}"
+    group: "{{ vaultwarden.gid }}"
+    mode: "0755"
+  loop:
+    - "{{ vaultwarden.root }}"
+    - "{{ vaultwarden.root }}/data"
+
+- name: Check secrets present (optional)
+  ansible.builtin.assert:
+    that:
+      - vault_vaultwarden_admin_token is string
+    fail_msg: "ADMIN_TOKEN fehlt – setze vault_vaultwarden_admin_token in group_vars/all.yml (Vault)."
+  when: vaultwarden.env.SIGNUPS_ALLOWED == "false"
+
+- name: Render environment file (.env)
+  ansible.builtin.template:
+    src: env.j2
+    dest: "{{ vaultwarden.env_file }}"
+    mode: "0600"
+
+- name: Render Vaultwarden compose (v2)
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: "{{ vaultwarden.root }}/compose.yml"
+    mode: "0644"
+
+- name: Deploy Vaultwarden (compose v2, pull+up)
+  community.docker.docker_compose_v2:
+    project_src: "{{ vaultwarden.root }}"
+    files: ["compose.yml"]
+    state: present
+    pull: always
+    recreate: auto

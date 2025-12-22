@@ -1,0 +1,27 @@
+repos:
+  - repo: local
+    hooks:
+      - id: check-ansible-vault
+        name: Check ansible-vault encryption for secrets.yml
+        language: system
+        pass_filenames: false
+        stages: [pre-commit]
+        entry: |
+          sh -eu -c '
+          FILE="inventory/group_vars/all/secrets.yml"
+
+          if [ ! -f "$FILE" ]; then
+            echo "INFO: $FILE not present (skipping)."
+            exit 0
+          fi
+
+          echo "Checking $FILE for ansible-vault encryption..."
+          firstline="$(head -n1 "$FILE" 2>/dev/null || true)"
+
+          if ! echo "$firstline" | grep -q "^\$ANSIBLE_VAULT;"; then
+              echo "ERROR: $FILE is not ansible-vault encrypted"
+              echo "Hint: run ansible-vault encrypt $FILE"
+              exit 1
+          fi
+          echo "OK: looks ansible-vault encrypted."
+          '

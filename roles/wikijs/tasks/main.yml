@@ -1,0 +1,31 @@
+- name: Ensure directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ wikijs.root }}"
+    - "{{ wikijs.volumes.db }}"
+    - "{{ wikijs.volumes.data }}"
+
+- name: Render environment file (.env)
+  ansible.builtin.template:
+    src: env.j2
+    dest: "{{ wikijs.env_file }}"
+    mode: "0600"
+
+- name: Render docker compose
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: "{{ wikijs.root }}/compose.yml"
+    mode: "0644"
+  # notify: Restart Wiki.js stack
+
+- name: Bring Wiki.js stack up
+  community.docker.docker_compose_v2:
+    project_src: "{{ wikijs.root }}"
+    files:
+      - compose.yml
+    state: present
+    pull: always
+    recreate: auto

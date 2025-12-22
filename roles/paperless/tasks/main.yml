@@ -1,0 +1,53 @@
+---
+- name: Ensure paperless directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ paperless.uid }}"
+    group: "{{ paperless.gid }}"
+    mode: "0755"
+  loop:
+    - "{{ paperless.root }}/"
+    - "{{ paperless.root }}/export/"
+    - "{{ paperless.root }}/consume/"
+
+- name: Ensure dirs for SFTP
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    mode: "0755"
+  loop:
+    - "{{ sftp_scanner.root }}/"
+    - "{{ sftp_scanner.root }}/config/"
+    - "{{ sftp_scanner.root }}/config/consume/"
+  when: sftp_scanner.enabled | default(false)
+
+- name: Validate single scanner public key
+  ansible.builtin.assert:
+    that:
+      - sftp_scanner.public_key is defined
+      - (sftp_scanner.public_key | trim) | length > 0
+      - (sftp_scanner.public_key | trim) is match('^ssh-(?:ed25519|rsa|ecdsa-sha2-nistp256)\\s+[A-Za-z0-9+/=]+(?:\\s+.+)?$')
+    fail_msg: "Ungültiger Public Key in sftp_scanner.public_key"
+  when: sftp_scanner.enabled | default(false)
+
+
+- name: Render paperless compose
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: "{{ paperless.root }}/compose.yml"
+    mode: "0644"
+
+- name: Render paperless compose.env
+  ansible.builtin.template:
+    src: env.j2
+    dest: "{{ paperless.root }}/.env"
+    mode: "0640"
+
+- name: Deploy paperless stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ paperless.root }}"
+    files:
+      - compose.yml
+    state: present
+    pull: always

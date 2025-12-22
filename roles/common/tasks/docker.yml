@@ -1,0 +1,131 @@
+# Docker installation tasks
+# Strategy:
+# - Debian bookworm/bullseye: install via official Docker APT repo (docker-ce + compose plugin)
+# - Debian trixie/sid: install via get.docker.com (ensures docker compose v2 is available)
+#
+# Variables expected:
+#   docker_user: user to add to docker group
+#   docker_group: (optional) docker group name, default 'docker'
+#   srv_root: directory to create, e.g. /srv
+
+- name: Decide Docker install method (Debian)
+  ansible.builtin.set_fact:
+    docker_install_method: "{{ 'getdocker' if ansible_facts.distribution_release in ['trixie','sid'] else 'repo' }}"
+  when: ansible_facts.os_family == 'Debian'
+
+- name: Ensure Docker dependencies are installed
+  become: true
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - curl
+      - gnupg
+    state: present
+    update_cache: true
+  when: ansible_facts.os_family == 'Debian'
+
+# ---- Method: Official Docker APT repo (stable Debian) ----
+- name: Ensure /etc/apt/keyrings exists
+  become: true
+  ansible.builtin.file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: "0755"
+  when:
+    - ansible_facts.os_family == 'Debian'
+    - docker_install_method == 'repo'
+
+- name: Add Docker APT key (repo method)
+  become: true
+  ansible.builtin.shell: |
+    set -euo pipefail
+    curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    chmod a+r /etc/apt/keyrings/docker.gpg
+  args:
+    executable: /bin/bash
+    creates: /etc/apt/keyrings/docker.gpg
+  when:
+    - ansible_facts.os_family == 'Debian'
+    - docker_install_method == 'repo'
+
+- name: Add Docker repo (repo method)
+  become: true
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/docker.list
+    content: |
+      {% set docker_arch = {'x86_64': 'amd64', 'aarch64': 'arm64', 'armv7l': 'armhf'}.get(ansible_facts['architecture'], 'amd64') %}
+      deb [arch={{ docker_arch }} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian {{ ansible_facts.distribution_release }} stable
+    mode: "0644"
+  when:
+    - ansible_facts.os_family == 'Debian'
+    - docker_install_method == 'repo'
+
+- name: Install Docker engine & compose plugin (repo method)
+  become: true
+  ansible.builtin.apt:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: present
+    update_cache: true
+  when:
+    - ansible_facts.os_family == 'Debian'
+    - docker_install_method == 'repo'
+
+# ---- Method: get.docker.com (Debian trixie/sid) ----
+- name: Install Docker via get.docker.com (getdocker method)
+  become: true
+  ansible.builtin.shell: |
+    set -euo pipefail
+    curl -fsSL https://get.docker.com | sh
+  args:
+    executable: /bin/bash
+    creates: /usr/bin/docker
+  when:
+    - ansible_facts.os_family == 'Debian'
+    - docker_install_method == 'getdocker'
+
+# ---- Common post-install steps ----
+- name: Enable & start Docker
+  become: true
+  ansible.builtin.systemd:
+    name: docker
+    enabled: true
+    state: started
+  when: ansible_facts.os_family == 'Debian'
+
+- name: Add user to docker group
+  become: true
+  ansible.builtin.user:
+    name: "{{ docker_user }}"
+    groups: "{{ docker_group | default('docker') }}"
+    append: true
+  when: ansible_facts.os_family == 'Debian'
+
+- name: Reset SSH connection to apply new group membership
+  ansible.builtin.meta: reset_connection
+  when: ansible_facts.os_family == 'Debian'
+
+- name: Verify docker compose is available
+  ansible.builtin.command: docker compose version
+  register: docker_compose_version
+  changed_when: false
+  when: ansible_facts.os_family == 'Debian'
+
+- name: Ensure /srv exists
+  become: true
+  ansible.builtin.file:
+    path: "{{ srv_root }}"
+    state: directory
+    owner: "{{ docker_user }}"
+    group: "{{ docker_group | default('docker') }}"
+    mode: "0755"
+
+- name: Ensure proxy network exists
+  community.docker.docker_network:
+    name: proxy
+    state: present
+    attachable: true

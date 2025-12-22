@@ -1,0 +1,20 @@
+---
+
+- name: Install WireGuard packages
+  ansible.builtin.apt:
+    name:
+      - wireguard
+      - wireguard-tools
+      - iproute2
+    state: present
+    update_cache: true
+  tags: [wireguard_prereq]
+
+- name: Ensure /etc/wireguard exists
+  ansible.builtin.file:
+    path: /etc/wireguard
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+  tags: [wireguard_prereq]

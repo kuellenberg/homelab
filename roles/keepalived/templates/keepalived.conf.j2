@@ -1,0 +1,29 @@
+vrrp_instance {{ keepalived_vip_instance }} {
+    state               {{ keepalived_vip_state }}
+    interface           {{ keepalived_vip_interface }}
+    virtual_router_id   {{ keepalived_vip_virtual_router_id }}
+    priority            {{ keepalived_vip_priority }}
+    advert_int          {{ keepalived_vip_advert_int }}
+
+{% if keepalived_vip_nopreempt %}
+    nopreempt
+{% endif %}
+
+    authentication {
+        auth_type {{ keepalived_vip_auth_type }}
+        auth_pass {{ keepalived_vip_auth_pass }}
+    }
+
+{% if keepalived_vip_use_unicast %}
+    unicast_src_ip {{ keepalived_vip_unicast_src_ip }}
+    unicast_peer {
+{% for p in keepalived_vip_unicast_peers %}
+        {{ p }}
+{% endfor %}
+    }
+{% endif %}
+
+    virtual_ipaddress {
+        {{ keepalived_vip_address }}
+    }
+}

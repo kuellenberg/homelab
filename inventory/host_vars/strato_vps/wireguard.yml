@@ -1,0 +1,38 @@
+wireguard_role: server
+wireguard_interface: wg0
+wireguard_port: 51820
+wireguard_address: "10.42.0.1/24"
+
+wireguard_peers:
+  - name: smallbox1
+    allowed_ips:
+      - "10.42.0.3/32"
+    persistent_keepalive: 25
+  
+  - name: smallbox2
+    allowed_ips:
+      - "10.42.0.2/32"
+    persistent_keepalive: 25
+
+# Shape of things to come
+# wireguard_instances:
+#   - name: mgmt
+#     interface: wg0
+#     port: 51820
+#     address: "10.42.0.1/24"
+#     peers:
+#       - name: smallbox1
+#         allowed_ips: ["10.42.0.3/32"]
+#         persistent_keepalive: 25
+#       - name: smallbox2
+#         allowed_ips: ["10.42.0.2/32"]
+#         persistent_keepalive: 25
+
+#   - name: ha_gw
+#     interface: wg1
+#     port: 51821
+#     address: "10.43.0.1/24"
+#     peers:
+#       - name: ha-gateway   
+#         allowed_ips: ["10.43.0.2/32", "192.168.0.2/32"]
+#         persistent_keepalive: 25

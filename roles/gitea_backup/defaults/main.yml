@@ -1,0 +1,36 @@
+gitea_backup:
+  container_name: "gitea"
+  # Host-Verzeichnis, das in den Container nach /var/lib/gitea gemountet ist:
+  host_backup_dir: "{{ gitea.root }}/backup"
+
+  # Dateiname: gitea-dump-YYYYmmdd-HHMMSS.zip (Gitea default ist ZIP)
+  filename_prefix: "gitea-dump"
+  timestamp_format: "%Y%m%d-%H%M%S"
+
+  # Rsync-Ziel (bitte unten in group_vars überschreiben): "backup@nas:/volume1/backups/gitea/"
+  rsync_target: ""
+  rsync_port: 22
+  rsync_bwlimit: ""     # z.B. "4000" für ~4MB/s, leer = kein Limit
+  rsync_extra_opts: ""  # z.B. "--partial --progress" (leer lassen für cron)
+
+  # Aufbewahrung in Tagen (lokal). 0 = keine Löschung
+  retention_days: 14
+
+  # Optional: Remote-Retention (SSH-Befehl 'find ... -mtime +N -delete' auf dem NAS)
+  remote_retention_days: 0
+
+  # SSH
+  ssh_key_path: "/root/.ssh/id_ed25519"
+  ssh_known_host: ""  # z.B. "nas.lan" oder IP – wenn leer, wird kein known_hosts-Eintrag erzeugt
+
+  # Cron
+  cron_enabled: true
+  cron_minute: "17"
+  cron_hour: "3"
+
+  # === Restore ===
+  restore_enabled: true
+
+  # Optional: expliziter Container-UID/GID Fallback (rootless: 1000/1000)
+  uid: "{{ gitea.uid | default(1000) }}"
+  gid: "{{ gitea.gid | default(1000) }}"

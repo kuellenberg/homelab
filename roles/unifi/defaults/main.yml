@@ -1,0 +1,12 @@
+unifi:
+  root: "/srv/unifi"
+  tz: "Europe/Berlin"
+  puid: 1000
+  pgid: 1000
+  mongo:
+    dbname: "unifi"
+    user: "unifi"
+    pass: "{{ vault_unifi_mongo_pass }}"
+    authsource: "admin"
+    root_user: "root"
+    root_pass: "{{ vault_unifi_root_pass }}"

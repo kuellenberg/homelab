@@ -1,0 +1,23 @@
+---
+
+log:
+  level: DEBUG
+  format: common
+
+accessLog: {}
+
+api:
+  dashboard: true
+  debug: false
+  insecure: true
+
+entryPoints:
+  http:
+    address: ":80"
+  https:
+    address: ":443"
+
+providers:
+  file:
+    directory: "/etc/traefik/dynamic"
+    watch: true

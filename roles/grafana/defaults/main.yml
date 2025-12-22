@@ -1,0 +1,7 @@
+---
+grafana:
+  root: "{{ srv_root }}/grafana"
+  uid: 1000
+  gid: 1000
+  domain: "grafana.{{ domain_base }}"
+  env: {}

@@ -1,0 +1,6 @@
+gitea:
+  root: /srv/gitea
+  http_port: 3333
+  ssh_port: 2222
+  uid: 1000
+  gid: 1000

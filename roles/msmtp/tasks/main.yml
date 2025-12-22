@@ -1,0 +1,40 @@
+---
+
+- name: Check if vault password for msmtp is set
+  ansible.builtin.assert:
+    that:
+      - vault_msmtp_strato_smtp_pass is defined
+      - vault_msmtp_strato_smtp_pass | length > 0
+    fail_msg: "No vault password set for msmtp SMTP password!"
+
+- name: Install msmtp and bsd-mailx
+  become: true
+  ansible.builtin.apt:
+    name: [msmtp, msmtp-mta, bsd-mailx]
+    state: present
+    update_cache: true
+
+- name: Render msmtp config files
+  become: true
+  ansible.builtin.template:
+    src: msmtprc.j2
+    dest: "{{ item.dest }}"
+    mode: "{{ item.mode }}"
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+  loop: "{{ msmtp_.users }}"
+
+  notify: Check msmtp configuration
+
+- name: Ensure msmtp is used as MTA
+  become: true
+  ansible.builtin.lineinfile:
+    path: "/etc/mail.rc"
+    line: "set mta=/usr/bin/msmtp"
+    state: present
+    insertafter: EOF
+    create: true
+    owner: "root"
+    group: "root"
+    mode: "0600"
+  notify: "Check msmtp configuration"

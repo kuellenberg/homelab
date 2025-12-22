@@ -1,0 +1,42 @@
+---
+- name: Create admin user
+  become: true
+  ansible.builtin.user:
+    name: "{{ admin_user }}"
+    shell: /bin/bash
+    groups: sudo
+    append: true
+    create_home: true
+
+- name: Create .ssh directory for admin user
+  become: true
+  ansible.builtin.file:
+    path: "/home/{{ admin_user }}/.ssh"
+    state: directory
+    owner: "{{ admin_user }}"
+    group: "{{ admin_user }}"
+    mode: "0700"
+
+- name: Deploy authorized_keys for admin user
+  become: true
+  ansible.builtin.copy:
+    dest: "/home/{{ admin_user }}/.ssh/authorized_keys"
+    content: |
+      {% for key in vps_admin_ssh_keys %}
+      {{ key }}
+      {% endfor %}
+    owner: "{{ admin_user }}"
+    group: "{{ admin_user }}"
+    mode: "0600"
+  when: vps_admin_ssh_keys | length > 0
+
+- name: Configure passwordless sudo for admin user (optional)
+  become: true
+  ansible.builtin.copy:
+    dest: "/etc/sudoers.d/90-{{ admin_user }}"
+    content: "{{ admin_user }} ALL=(ALL) NOPASSWD: ALL\n"
+    owner: "root"
+    group: "root"
+    mode: "0440"
+    validate: "visudo -cf %s"
+  when: vps_admin_sudo_nopasswd | bool

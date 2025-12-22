@@ -1,0 +1,26 @@
+services:
+  vaultwarden:
+    image: "vaultwarden/server:{{ deploy_versions.vaultwarden | default('latest') }}"
+    container_name: vaultwarden
+    user: "{{ vaultwarden.uid }}:{{ vaultwarden.gid }}"
+    restart: unless-stopped
+    volumes:
+      - {{ vaultwarden.root }}/data:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "8082:80"
+
+{% if vaultwarden.helper.enable %}
+  vw-tools:
+    image: alpine:3.20
+    container_name: vw-tools
+    command: [ "sh", "-c", "sleep infinity" ]
+    {% if vaultwarden.helper.readonly %}read_only: true{% endif %}
+    user: "{{ vaultwarden.uid }}:{{ vaultwarden.gid }}"
+    restart: unless-stopped
+    volumes:
+      - {{ vaultwarden.root }}/data:/data
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+{% endif %}

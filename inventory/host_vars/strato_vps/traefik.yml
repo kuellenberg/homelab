@@ -1,0 +1,41 @@
+
+traefik_services:
+  - name: vaultwarden
+    host: vault.kuellenberg.eu
+    backend: http://10.42.0.2:8082
+    authelia: false
+
+  - name: wikijs
+    host: wiki.kuellenberg.eu
+    backend: http://10.42.0.2:3000
+    authelia: true
+
+  - name: authelia
+    host: auth.kuellenberg.eu
+    backend: http://authelia:9091
+    authelia: false
+
+  - name: paperless
+    host: paperless.kuellenberg.eu
+    backend: http://10.42.0.2:8000
+    authelia: true
+
+  - name: git
+    host: git.kuellenberg.eu
+    backend: http://10.42.0.2:3333
+    authelia: true
+
+  - name: immich
+    host: immich.kuellenberg.eu
+    backend: http://10.42.0.2:2283
+    authelia: false
+
+  - name: unifi
+    host: unifi.kuellenberg.eu
+    backend: https://10.42.0.2:8443
+    authelia: false
+  
+  - name: homeassistant
+    host: ha.kuellenberg.eu
+    backend: http://192.168.0.2:8123
+    authelia: false

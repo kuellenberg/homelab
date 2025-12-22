@@ -1,0 +1,15 @@
+defaults
+auth           on
+tls            on
+tls_trust_file /etc/ssl/certs/ca-certificates.crt
+syslog LOG_MAIL
+
+account {{ msmtp_.account }}
+host {{ msmtp_.smtp_server }}
+port {{ msmtp_.smtp_port }}
+tls_starttls {{ msmtp_.start_tls }}
+from {{ item.from_address | default(msmtp_.from_address) }}
+user {{ msmtp_.smtp_user }}
+password {{ msmtp_.smtp_pass }}
+
+account default : {{ msmtp_.account }}

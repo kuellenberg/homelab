@@ -1,0 +1,51 @@
+- name: Ensure folders for Gitea (top-level)
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ gitea.uid }}"
+    group: "{{ gitea.gid }}"
+    mode: "0755"
+  loop:
+    - "{{ gitea.root }}"
+    - "{{ gitea.root }}/data"
+    - "{{ gitea.root }}/config"
+    - "{{ gitea.root }}/backup"
+
+- name: Ensure ownership recursively for Gitea dirs
+  ansible.builtin.file:
+    path: "{{ item }}"
+    owner: "{{ gitea.uid }}"
+    group: "{{ gitea.gid }}"
+    state: directory
+    recurse: true
+  loop:
+    - "{{ gitea.root }}/data"
+    - "{{ gitea.root }}/config"
+    - "{{ gitea.root }}/backup"
+
+- name: Render compose file
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: "{{ gitea.root }}/compose.yml"
+    mode: "0644"
+
+- name: Deploy Gitea (compose v2)
+  community.docker.docker_compose_v2:
+    project_src: "{{ gitea.root }}"
+    files: ["compose.yml"]
+    state: present
+    pull: always
+  tags:
+    - gitea
+    - deploy
+
+# - name: Post-start recursive ownership check 
+#   absible.builtin.file:
+#     path: "{{ item }}"
+#     owner: "{{ gitea.uid }}"
+#     group: "{{ gitea.gid }}"
+#     state: directory
+#     recurse: true
+#   loop:
+#     - "{{ gitea.root }}/data"
+#     - "{{ gitea.root }}/config"

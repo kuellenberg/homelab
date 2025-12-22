@@ -1,0 +1,19 @@
+---
+
+- name: Install Packages
+  ansible.builtin.import_tasks: packages.yml
+  tags:
+    - packages
+    - common
+
+- name: Base System Setup
+  ansible.builtin.import_tasks: base.yml
+  tags: 
+    - base
+    - common
+
+- name: Docker Setup
+  ansible.builtin.import_tasks: docker.yml
+  tags:
+    - docker
+    - common

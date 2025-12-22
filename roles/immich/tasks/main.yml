@@ -1,0 +1,44 @@
+---
+- name: Ensure immich directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ immich.uid }}"
+    group: "{{ immich.gid }}"
+    mode: "0755"
+  loop:
+    - "{{ immich.root }}/"
+    # - "{{ immich.root }}/{{ immich.upload_location }}"
+    # - "{{ immich.root }}/{{ immich.db_data_location }}"
+
+- name: Render immich compose
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: "{{ immich.root }}/compose.yml"
+    mode: "0644"
+
+- name: Render immich .env
+  ansible.builtin.template:
+    src: env.j2
+    dest: "{{ immich.root }}/.env"
+    mode: "0640"
+
+- name: Deploy immich stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ immich.root }}"
+    files:
+      - compose.yml
+    state: present
+    pull: always
+
+# - name: Ensure ownership recursively 
+#   become: true
+#   file:
+#     path: "{{ item }}"
+#     owner: "{{ immich.uid }}"
+#     group: "{{ immich.gid }}"
+#     state: directory
+#     recurse: yes
+#   loop:
+#     - "{{ immich.root }}/library"
+#     - "{{ immich.root }}/postgres"

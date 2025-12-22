@@ -1,0 +1,22 @@
+paperless:
+  root: "{{ srv_root }}/paperless"
+  uid: 1000
+  gid: 1000
+  url: "https://paperless.{{ domain_base }}"
+  env:
+    time_zone: "Europe/Berlin"
+    ocr_language: "deu+eng"
+    secret_key: "{{ vault_paperless_secret_key }}"
+
+sftp_scanner:
+  name: openssh-server
+  enabled: true
+  root: "{{ srv_root }}/paperless/openssh-server"
+  hostname: openssh-server
+  user: ricoh
+  puid: 1000
+  pgid: 1000
+  tz: Europe/Berlin
+  port_host: 5522
+  port_container: 2222
+  public_key: "{{ vault_scanner_public_key }}"

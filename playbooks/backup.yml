@@ -1,0 +1,5 @@
+- name: Homelab_backup
+  hosts: smallbox2
+  gather_facts: true
+  roles:
+    - gitea_backup

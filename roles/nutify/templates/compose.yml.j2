@@ -1,0 +1,28 @@
+services:
+  nut:
+    image: "dartsteven/nutify:{{ deploy_versions.nutify | default('arm64-latest') }}"
+    container_name: nutify
+    privileged: true
+    cap_add:
+      - SYS_ADMIN
+      - SYS_RAWIO
+      - MKNOD
+    devices:
+      - /dev/bus/usb:/dev/bus/usb:rwm
+    device_cgroup_rules:
+      - 'c 189:* rwm'
+    volumes:
+      - {{ nutify_.root }}/logs:/app/nutify/logs
+      - {{ nutify_.root }}/instance:/app/nutify/instance
+      - {{ nutify_.root }}/ssl:/app/ssl
+      - {{ nutify_.root }}/etc/nut:/etc/nut
+      - /dev:/dev:rw              # Full /dev access improves hotplug handling
+      - /run/udev:/run/udev:ro    # Access to udev events
+    env_file:
+      - {{ nutify_.env_file }}
+    ports:
+      # - 3493:3493
+      - 5050:5050
+      # - 443:443
+    restart: always
+    user: root

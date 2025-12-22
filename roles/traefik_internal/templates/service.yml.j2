@@ -1,0 +1,33 @@
+tls:
+  certificates:
+    - certFile: "/etc/traefik/certs/{{ svc.name }}/{{ svc.domain }}.crt"
+      keyFile: "/etc/traefik/certs/{{ svc.name }}/{{ svc.domain }}.key"
+
+http:
+  routers:
+    {{ svc.name }}-https:
+      rule: "Host(`{{ svc.domain }}`)"
+      entryPoints:
+        - https
+      service: {{ svc.name }}-svc
+      tls: {}  
+
+    immich-http:
+      rule: "Host(`{{ svc.domain }}`)"
+      entryPoints:
+        - http
+      middlewares:
+        - redirect-to-https
+      service: {{ svc.name }}-svc
+
+  middlewares:
+    redirect-to-https:
+      redirectScheme:
+        scheme: https
+        permanent: true
+
+  services:
+    {{ svc.name }}-svc:
+      loadBalancer:
+        servers:
+          - url: "{{ svc.traefik.internal.backend }}"

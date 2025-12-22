@@ -1,0 +1,9 @@
+admin_user: "ondre"
+
+vps_admin_ssh_keys: "{{ vault_vps_admin_ssh_keys }}"
+
+# Sudo ohne Passwort für Ansible
+vps_admin_sudo_nopasswd: true
+
+docker_user: ondre
+docker_group: ondre

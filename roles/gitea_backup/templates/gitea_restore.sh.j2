@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+set -euo pipefail
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+CONTAINER="{{ gitea.container_name }}"
+DOCKER="{{ docker_bin }}"
+BACKUP_DIR="{{ gitea_backup.host_backup_dir }}"
+NAS_TARGET="{{ gitea_backup.rsync_target }}"
+SSH_KEY="{{ gitea_backup.ssh_key_path }}"
+RSYNC_PORT="{{ gitea_backup.rsync_port }}"
+
+# Docker-rootless Standard-UID/GID (git:git)
+D_UID="{{ gitea.uid | default('1000') }}"
+D_GID="{{ gitea.gid | default('1000') }}"
+
+# Pfade **im Container** für Docker-rootless laut offizieller Doku
+APP_INI_IN_CONTAINER="{{ gitea.app_ini_path | default('/etc/gitea/app.ini') }}"
+DATA_DIR_IN_CONTAINER="{{ gitea.data_dir | default('/var/lib/gitea') }}"
+REPOS_DIR_IN_CONTAINER="{{ gitea.repos_dir | default('/var/lib/gitea/git/repositories') }}"
+TMP_IN_CONTAINER="/tmp"
+
+AUTO_YES="${RESTORE_YES:-0}"
+if [[ "${1:-}" == "-y" ]]; then AUTO_YES=1; fi
+
+log(){ echo "[$(date -Is)] $*"; }
+fail(){ log "ERROR: $*"; exit 1; }
+
+mkdir -p "${BACKUP_DIR}"
+cd "${BACKUP_DIR}"
+
+LATEST_FILE=""
+if [[ -n "${NAS_TARGET}" ]]; then
+  NAS_HOST="$(echo "${NAS_TARGET}" | awk -F: '{print $1}')"
+  NAS_PATH="$(echo "${NAS_TARGET}" | awk -F: '{print $2}')"
+  [[ -n "${NAS_HOST}" && -n "${NAS_PATH}" ]] || fail "Ungültiges NAS-Zielformat: ${NAS_TARGET}"
+
+  log "Ermittle neuestes Backup auf NAS (${NAS_TARGET})..."
+  LATEST_FILE="$(ssh -p "${RSYNC_PORT}" -i "${SSH_KEY}" -o StrictHostKeyChecking=yes \
+    "${NAS_HOST}" "ls -t \"${NAS_PATH}\" | head -n1")" || true
+  [[ -n "${LATEST_FILE}" ]] || fail "Kein Backup auf NAS gefunden."
+
+  log "Kopiere Backup vom NAS..."
+  rsync -z -e "ssh -p ${RSYNC_PORT} -i ${SSH_KEY} -o StrictHostKeyChecking=yes" \
+    "${NAS_TARGET}/${LATEST_FILE}" "${BACKUP_DIR}/"
+else
+  # ohne NAS: nimm lokal jüngstes ZIP
+  LATEST_FILE="$(ls -t *.zip 2>/dev/null | head -n1 || true)"
+  [[ -n "${LATEST_FILE}" ]] || fail "Kein lokales Backup-ZIP gefunden."
+fi
+
+[[ "${AUTO_YES}" == "1" ]] || { read -r -p "Restore von ${LATEST_FILE}? [y/N] " yn; [[ "${yn}" =~ ^[Yy]$ ]] || { log "Abgebrochen."; exit 0; }; }
+
+log "Changing ownership of bacakup file"
+chown ${D_UID}:${D_UID} ${BACKUP_DIR}/${LATEST_FILE}
+
+log "Starte Gitea-Container..."
+"${DOCKER}" start "${CONTAINER}" 
+
+# 1) ZIP in Container /tmp kopieren
+log "Kopiere ZIP ins Container-TMP..."
+docker cp "${BACKUP_DIR}/${LATEST_FILE}" "${CONTAINER}:${TMP_IN_CONTAINER}/${LATEST_FILE}"
+
+# 2) Im Container entpacken und an Zielpfade schieben (Docker-rootless Pfade!)
+log "Entpacke und schiebe Dateien im Container..."
+docker exec --user "${D_UID}:${D_GID}" -w "${TMP_IN_CONTAINER}" "${CONTAINER}" bash -lc "
+  set -euo pipefail
+  unzip -q '${TMP_IN_CONTAINER}/${LATEST_FILE}' -d '${TMP_IN_CONTAINER}/restore'
+  cd '${TMP_IN_CONTAINER}/restore'/* || cd '${TMP_IN_CONTAINER}/restore' 2>/dev/null || true
+
+  # app.ini (falls im Archiv enthalten) an Zielpfad
+  if [[ -f 'app.ini' ]]; then
+    mkdir -p 'data/conf'
+    mv -f 'app.ini' 'data/conf/app.ini'
+  fi
+
+  # Docker-rootless laut Docs:
+  # - app.ini aus data/conf nach /etc/gitea/app.ini
+  if [[ -f 'data/conf/app.ini' ]]; then
+    mkdir -p /etc
+    mkdir -p /etc/gitea
+    mv -f 'data/conf/app.ini' '/etc/gitea/app.ini'
+  fi
+
+  # - data/* nach /var/lib/gitea
+  if [[ -d 'data' ]]; then
+    mkdir -p '${DATA_DIR_IN_CONTAINER}'
+    cp -a 'data/.' '${DATA_DIR_IN_CONTAINER}/'
+  fi
+
+  # - repos/* nach /var/lib/gitea/git/gitea-repositories
+  if [[ -d 'repos' ]]; then
+    mkdir -p '${REPOS_DIR_IN_CONTAINER}'
+    cp -a 'repos/.' '${REPOS_DIR_IN_CONTAINER}/'
+  fi
+
+  # Ownership korrigieren
+  chown -R ${D_UID}:${D_GID} '${DATA_DIR_IN_CONTAINER}' '${REPOS_DIR_IN_CONTAINER}' '/etc/gitea' 2>/dev/null || true
+
+  # Aufräumen
+  rm -rf '${TMP_IN_CONTAINER}/restore' '${TMP_IN_CONTAINER}/${LATEST_FILE}'
+"
+
+# 3) Container starten
+log "Starte Gitea-Container..."
+"${DOCKER}" start "${CONTAINER}"
+
+# 4) Hooks regenerieren (notwendig bei geändertem Installationspfad/Container-Layout)
+log "Regeneriere Repository Hooks..."
+docker exec --user "${D_UID}:${D_GID}" "${CONTAINER}" \
+  gitea -c "${APP_INI_IN_CONTAINER}" admin regenerate hooks
+
+log "Restore abgeschlossen."

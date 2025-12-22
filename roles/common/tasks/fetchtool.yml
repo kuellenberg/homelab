@@ -1,0 +1,51 @@
+- name: Check availability of fastfetch/neofetch (Debian)
+  ansible.builtin.shell: |
+    set -e
+    if apt-cache show fastfetch >/dev/null 2>&1; then
+      echo fastfetch
+    elif apt-cache show neofetch >/dev/null 2>&1; then
+      echo neofetch
+    else
+      echo NONE
+    fi
+  args:
+    executable: /bin/bash
+  register: fetch_choice
+  changed_when: false
+  when: ansible_facts.os_family == "Debian"
+
+- name: Fail if no fetch tool is available (Debian)
+  ansible.builtin.fail:
+    msg: "Neither fastfetch nor neofetch is available in APT on {{ inventory_hostname }} ({{ ansible_distribution_release }})."
+  when:
+    - ansible_facts.os_family == "Debian"
+    - fetch_choice.stdout == "NONE"
+
+- name: Install chosen fetch tool (Debian)
+  become: true
+  ansible.builtin.apt:
+    name: "{{ fetch_choice.stdout }}"
+    state: present
+  when:
+    - ansible_facts.os_family == "Debian"
+    - fetch_choice.stdout != "NONE"
+
+- name: Remove old fetch entries from bashrc
+  become: true
+  ansible.builtin.lineinfile:
+    path: "/home/{{ admin_user }}/.bashrc"
+    regexp: '^(neofetch|fastfetch)$'
+    state: absent
+
+- name: Ensure fetch tool is called at login for admin user
+  become: true
+  ansible.builtin.lineinfile:
+    path: "/home/{{ admin_user }}/.bashrc"
+    line: '[ -n "$PS1" ] && {{ fetch_choice.stdout }}'
+    state: present
+    insertafter: EOF
+    create: true
+    owner: "{{ admin_user }}"
+    group: "{{ admin_user }}"
+    mode: "0644"
+  when: fetch_choice.stdout != "NONE"

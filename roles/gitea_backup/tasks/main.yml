@@ -1,0 +1,54 @@
+- name: Ensure rsync is installed
+  ansible.builtin.package:
+    name: rsync
+    state: present
+
+- name: Ensure backup dir exists (host)
+  ansible.builtin.file:
+    path: "{{ gitea_backup.host_backup_dir }}"
+    state: directory
+    owner: "{{ gitea.uid | default(1000) }}"
+    group: "{{ gitea.gid | default(1000) }}"
+    mode: "0755"
+
+- name: Optional known_hosts Eintrag für NAS
+  ansible.builtin.known_hosts:
+    name: "{{ gitea_backup.ssh_known_host }}"
+    key: "{{ lookup('pipe', 'ssh-keyscan -p ' ~ gitea_backup.rsync_port ~ ' ' ~ gitea_backup.ssh_known_host) }}"
+  when: gitea_backup.ssh_known_host | length > 0
+
+- name: Deploy backup script
+  become: true
+  ansible.builtin.template:
+    src: "gitea_backup.sh.j2"
+    dest: "/usr/local/sbin/gitea_backup.sh"
+    owner: "root"
+    group: "root"
+    mode: "0750"
+
+- name: Deploy restore script
+  become: true
+  ansible.builtin.template:
+    src: "gitea_restore.sh.j2"
+    dest: "/usr/local/sbin/gitea_restore.sh"
+    owner: root
+    group: root
+    mode: "0750"
+  when: gitea_backup_restore_enabled | default(true) | bool
+
+- name: Create cron job (daily)
+  ansible.builtin.cron:
+    name: "Gitea backup + rsync"
+    user: "root"
+    minute: "{{ gitea_backup.cron_minute }}"
+    hour: "{{ gitea_backup.cron_hour }}"
+    job: "/usr/local/sbin/gitea_backup.sh >> /var/log/gitea_backup.log 2>&1"
+    state: "{{ 'present' if gitea_backup.cron_enabled else 'absent' }}"
+
+# On-demand: run backup on demand when tag "run_now" is set
+- name: Run backup now (on-demand)
+  become: true
+  ansible.builtin.command: /usr/local/sbin/gitea_backup.sh
+  changed_when: true
+  tags: ["run_now"]
+  when: "'run_now' in ansible_run_tags"

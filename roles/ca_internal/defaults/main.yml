@@ -1,0 +1,23 @@
+---
+
+ca_internal_dir: "{{ srv_root }}/ca_internal"
+
+ca_internal_:
+    dir: "{{ ca_internal_dir }}"
+    # Pfade zu CA Key und Cert
+    ca_key: "{{ ca_internal_dir }}/ca.key"
+    ca_crt: "{{ ca_internal_dir }}/ca.crt"
+
+    # Root-CA Laufzeit (Tageabout:blank#blocked)
+    root_days: 3650
+
+    # Wo Traefik_internal die Certs erwartet (Host-Pfad)
+    out_dir: "{{ srv_root }}/traefik_internal/certs"
+
+    # Leaf Laufzeit + Renewal-Schwelle
+    leaf:
+        days: 90                # 90 wie LE
+        renew_before_days: 30   # erneuern, wenn <30 Tage Restlaufzeit
+        rotate_key: true        # Rotation: wenn erneuert wird, auch Key neu erzeugen
+
+    services: "{{ internal_services | default([]) }}"

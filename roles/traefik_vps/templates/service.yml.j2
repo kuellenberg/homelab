@@ -1,0 +1,23 @@
+http:
+  serversTransports:
+    default-insecure:
+      insecureSkipVerify: true
+  routers:
+    {{ item.name }}-router:
+      rule: "Host(`{{ item.host }}`)"
+      entryPoints:
+        - https
+      tls:
+        certResolver: letsencrypt
+      service: {{ item.name }}-svc
+      {% if item.authelia -%}
+      middlewares:
+        - authelia@docker
+      {% endif %}
+
+  services:
+    {{ item.name }}-svc:
+      loadBalancer:
+        serversTransport: default-insecure
+        servers:
+          - url: "{{ item.backend }}"

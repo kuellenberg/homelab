@@ -1,0 +1,20 @@
+[Interface]
+Address = {{ wireguard_address }}
+ListenPort = {{ wireguard_port }}
+PrivateKey = {{ wireguard_private_key }}
+
+# PostUp =
+# PostDown =
+
+{% for host in groups['wireguard_clients'] | sort %}
+[Peer]
+# {{ host }}
+PublicKey = {{ hostvars[host].wireguard_public_key }}
+AllowedIPs = {{ ([
+  (hostvars[host].wireguard_address | regex_replace('/.*', '/32'))
+] + (hostvars[host].wireguard_extra_allowed_ips | default([]))) | join(", ") }}
+{% if wireguard_persistent_keepalive is defined %}
+PersistentKeepalive = {{ wireguard_persistent_keepalive }}
+{% endif %}
+
+{% endfor %}

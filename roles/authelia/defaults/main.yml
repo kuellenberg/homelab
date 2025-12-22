@@ -1,0 +1,27 @@
+authelia:
+  root: "{{ srv_root }}/authelia"
+  uid: 1000
+  gid: 1000
+  domain: "{{ domain_base | default('kuellenberg.eu') }}"
+  port: 9091
+
+  # Session-Cookie Domain (meist Basisdomain)
+  cookie_domain: "{{ domain_base }}"
+
+  # Optional: default_policy = one_factor/deny
+  default_policy: one_factor
+
+  # Traefik-Netz
+  network: "{{ proxy_network | default('proxy') }}"
+
+# Secrets in vault
+vault_authelia_jwt_secret: "replaceme"
+vault_authelia_session_secret: "replaceme"
+vault_authelia_storage_encryption_key: "replaceme"
+
+# Users in vault
+vault_authelia_users:
+  - username: "username"
+    displayname: "displayname"
+    email: "replace@me.de"
+    password_hash: "$argon2id$v=19$m=65536,t=3,p=replaceme"

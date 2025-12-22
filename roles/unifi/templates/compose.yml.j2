@@ -1,0 +1,63 @@
+x-env-common: &env_common
+  TZ: "{{ unifi.tz }}"
+
+services:
+  unifi-db:
+    image: mongo:3.6
+    user: {{ unifi.puid }}:{{ unifi.pgid }}
+    container_name: unifi-db
+    restart: unless-stopped
+    environment:
+      <<: *env_common
+      MONGO_INITDB_ROOT_USERNAME: "{{ unifi.mongo.root_user }}"
+      MONGO_INITDB_ROOT_PASSWORD: "{{ unifi.mongo.root_pass }}"
+      MONGO_USER: "{{ unifi.mongo.user }}"
+      MONGO_PASS: "{{ unifi.mongo.pass }}"
+      MONGO_DBNAME: "{{ unifi.mongo.dbname }}"
+      MONGO_AUTHSOURCE: "{{ unifi.mongo.authsource }}"
+    volumes:
+      - "{{ unifi.root }}/mongo-data:/data/db"
+      - "{{ unifi.root }}/init/init-mongo.sh:/docker-entrypoint-initdb.d/000-init-mongo.sh:ro"
+
+  unifi-network-application:
+    image: "lscr.io/linuxserver/unifi-network-application:{{ deploy_versions.unifi | default('latest') }}"
+    container_name: unifi-network-application
+    restart: unless-stopped
+    depends_on:
+      - unifi-db
+    environment:
+      <<: *env_common
+      PUID: "{{ unifi.puid }}"
+      PGID: "{{ unifi.pgid }}"
+      MONGO_USER: "{{ unifi.mongo.user }}"
+      MONGO_PASS: "{{ unifi.mongo.pass }}"
+      MONGO_HOST: "unifi-db"
+      MONGO_PORT: "27017"
+      MONGO_DBNAME: "{{ unifi.mongo.dbname }}"
+      MONGO_AUTHSOURCE: "{{ unifi.mongo.authsource }}"
+      # MEM_LIMIT: "1024"      # optional
+      # MEM_STARTUP: "1024"    # optional
+      # MONGO_TLS: "true"      # falls deine Mongo TLS nutzt
+
+    volumes:
+      - "{{ unifi.root }}/app-data:/config"
+
+    ports:
+      - "8080:8080"         # Inform
+      - "8443:8443"         # Web UI
+      - "3478:3478/udp"     # STUN
+      - "10001:10001/udp"   # Discovery
+      # optional:
+      # - "1900:1900/udp"
+      # - "8843:8843"
+      # - "8880:8880"
+      # - "6789:6789"
+      # - "5514:5514/udp"
+
+    networks:
+      - default
+      - proxy
+
+networks:
+  proxy:
+    external: true

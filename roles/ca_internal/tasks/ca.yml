@@ -1,0 +1,30 @@
+- name: Ensure CA directory exists
+  ansible.builtin.file:
+    path: "{{ ca_internal_.dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+# --- Root CA (einmalig) ---
+- name: Generate CA private key if missing
+  ansible.builtin.command: "openssl genrsa -out {{ ca_internal_.ca_key }} 4096"
+  args:
+    creates: "{{ ca_internal_.ca_key }}"
+  
+- name : Set strict permissions on private keys
+  ansible.builtin.file:
+    path: "{{ ca_internal_.ca_key }}"
+    owner: root
+    group: root
+    mode: "0600"
+
+- name: Generate CA certificate if missing
+  ansible.builtin.command: >
+    openssl req -x509 -new -nodes
+    -key {{ ca_internal_.ca_key }}
+    -sha256 -days {{ ca_internal_.root_days }}
+    -out {{ ca_internal_.ca_crt }}
+    -subj "/C=DE/O=Ondre Internal CA/CN=Ondre Internal CA"
+  args:
+    creates: "{{ ca_internal_.ca_crt }}"

@@ -1,0 +1,10 @@
+- name: Set timezone
+  become: true
+  community.general.timezone:
+    name: "{{ timezone }}"
+
+- name: Generate locale
+  become: true
+  community.general.locale_gen:
+    name: "{{ locale_lang }}"
+    state: present

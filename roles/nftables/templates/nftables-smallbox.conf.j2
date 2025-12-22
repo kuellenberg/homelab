@@ -1,0 +1,71 @@
+table inet smallbox_filter {
+  # INPUT: Pakete an die smallbox selbst
+  chain input {
+    type filter hook input priority filter; policy drop;
+
+    # Loopback
+    iif "lo" accept
+
+    # Established / related
+    ct state { established, related } accept
+
+    # --- AKTUELLE KOMFORT-EINSTELLUNG --------------------
+    # LAN darf alles
+    ip saddr {{ lan_cidr | default("192.168.0.0/24") }} accept
+
+    # WireGuard-Clients dürfen alles auf die smallbox
+    iif "wg0" ip saddr {{ wg_cidr | default("10.42.0.0/24") }} accept
+
+    # Docker-Container -> Host
+    ip saddr 172.16.0.0/12 accept
+    # ------------------------------------------------------
+
+
+    # --- SPÄTER MAL: RESTRIKTIVE VARIANTE ----------------
+    # Statt "LAN darf alles" oben:
+    #
+    # ip saddr {{ lan_cidr | default("192.168.0.0/24") }} \
+    #   tcp dport { 22, 80, 443, 3000 } accept
+    #
+    # iif "wg0" ip saddr {{ wg_cidr | default("10.42.0.0/24") }} \
+    #   tcp dport { 22, 80, 443, 3000 } accept
+    #
+    # Optional ICMP:
+    # ip saddr {{ lan_cidr | default("192.168.0.0/24") }} \
+    #   icmp type echo-request accept
+    #
+    # iif "wg0" ip saddr {{ wg_cidr | default("10.42.0.0/24") }} \
+    #   icmp type echo-request accept
+    # ------------------------------------------------------
+  }
+
+  # FORWARD: Routing zwischen Interfaces
+  chain forward {
+    type filter hook forward priority filter; policy accept;
+
+    # HINWEIS:
+    # Für später geplante restriktive Regeln:
+    #  - policy drop setzen
+    #  - explizit WG <-> LAN / Docker erlauben
+    # Aktuell bewusst "accept", damit Docker-FORWARD nicht blockiert wird.
+
+    # ct state { established, related } accept
+
+    # WireGuard <-> bestimmter LAN-Host
+    # iif "wg0" ip daddr {{ wg_lan_host | default("192.168.0.2") }} oif "eth0" accept
+    # iif "eth0" ip saddr {{ wg_lan_host | default("192.168.0.2") }} oif "wg0" accept
+
+    # --- oder gesamtes LAN ---------------------
+    # iif "wg0" ip daddr {{ lan_cidr | default("192.168.0.0/24") }} oif "eth0" accept
+    # iif "eth0" ip saddr {{ lan_cidr | default("192.168.0.0/24") }} oif "wg0" accept
+    # ------------------------------------------------------
+  }
+}
+
+table inet smallbox_nat {
+  chain postrouting {
+    type nat hook postrouting priority srcnat; policy accept;
+
+    ip saddr {{ wg_cidr | default("10.42.0.0/24") }} oif "eth0" masquerade
+  }
+}

@@ -1,0 +1,7 @@
+- name: Restart Wiki.js stack
+  become: true
+  community.docker.docker_compose_v2:
+    project_src: "{{ wikijs.root }}"
+    files:
+      - compose.yml
+    state: restarted

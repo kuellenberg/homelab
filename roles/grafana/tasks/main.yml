@@ -1,0 +1,37 @@
+---
+- name: Ensure Grafana directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ grafana.uid }}"
+    group: "{{ grafana.gid }}"
+    mode: "0755"
+  loop:
+    - "{{ grafana.root }}"
+    - "{{ grafana.root }}/data"
+    - "{{ grafana.root }}/provisioning"
+
+- name: Render Grafana compose
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: "{{ grafana.root }}/compose.yml"
+    mode: "0644"
+
+- name: Deploy Grafana stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ grafana.root }}"
+    files:
+      - compose.yml
+    state: present
+    pull: always
+
+# - name: Ensure ownership recursively
+#   ansible.builtin.file:
+#     path: "{{ item }}"
+#     owner: "{{ grafana.uid }}"
+#     group: "{{ grafana.gid }}"
+#     state: directory
+#     recurse: true
+#   loop:
+#     - "{{ grafana.root }}/data"
+#     - "{{ grafana.root }}/provisioning"

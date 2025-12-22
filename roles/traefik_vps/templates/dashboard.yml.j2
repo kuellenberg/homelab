@@ -1,0 +1,11 @@
+http:
+  routers:
+    traefik-dashboard:
+      rule: "Host(`traefik.{{ domain_base }}`)"
+      entryPoints:
+        - https
+      tls:
+        certResolver: letsencrypt
+      service: api@internal
+      middlewares:
+        - authelia@docker

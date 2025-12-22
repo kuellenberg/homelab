@@ -1,0 +1,6 @@
+truenas_ip: 192.168.0.101
+
+docker_user: pi
+docker_group: pi
+
+admin_user: pi

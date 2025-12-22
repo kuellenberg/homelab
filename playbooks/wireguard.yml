@@ -1,0 +1,35 @@
+---
+# playbooks/wireguard.yml
+
+- name: WireGuard | Server | prerequisites + keys
+  hosts: vps
+  become: true
+  gather_facts: true
+  tasks:
+    - name: Server | prereq + keys
+      ansible.builtin.include_role:
+        name: wireguard_server
+        tasks_from: prereq_keys.yml
+
+- name: WireGuard | Clients | full deploy
+  hosts: homelab
+  become: true
+  gather_facts: true
+  vars:
+    wg_server_host: "{{ groups['wireguard_server'][0] }}"
+    wireguard_server_public_key: "{{ hostvars[wg_server_host].wireguard_public_key }}"
+  tasks:
+    - name: Clients | full
+      ansible.builtin.include_role:
+        name: wireguard_client
+        tasks_from: full.yml
+
+- name: WireGuard | Server | config from client facts
+  hosts: vps
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Server | config
+      ansible.builtin.include_role:
+        name: wireguard_server
+        tasks_from: config.yml

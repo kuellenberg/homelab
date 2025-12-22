@@ -1,0 +1,47 @@
+---
+
+- name: Ensure Traefik internal directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ traefik_internal_.uid }}"
+    group: "{{ traefik_internal_.gid }}"
+    mode: "0755"
+  loop:
+    - "{{ traefik_internal_.root }}"
+    - "{{ traefik_internal_.root }}/dynamic"
+
+- name: Deploy traefik.yml (internal)
+  ansible.builtin.template:
+    src: traefik.yml.j2
+    dest: "{{ traefik_internal_.root }}/traefik.yml"
+    mode: "0644"
+
+- name: Deploy internal Immich config
+  ansible.builtin.template:
+    src: service.yml.j2
+    dest: "{{ traefik_internal_.root }}/dynamic/{{ svc.name }}.yml"
+    mode: "0644"
+  loop: >-
+    {{ 
+      internal_services 
+      | selectattr('traefik.internal.enabled', 'defined')
+      | selectattr('traefik.internal.enabled') 
+      | list
+    }}
+  loop_control:
+    loop_var: svc
+
+- name: Deploy Traefik internal compose file
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: "{{ traefik_internal_.root }}/compose.yml"
+    mode: "0644"
+
+- name: Deploy Traefik internal (compose v2)
+  community.docker.docker_compose_v2:
+    project_src: "{{ traefik_internal_.root }}"
+    files: ["compose.yml"]
+    state: present
+    pull: always
+    recreate: auto

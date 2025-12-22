@@ -1,0 +1,18 @@
+all:
+  children:
+    homelab:
+      hosts:
+        smallbox1:
+        smallbox2:
+      vars:
+        ansible_user: pi
+
+    vps:
+      hosts:
+        strato_vps:
+          ansible_host: kuellenberg.eu
+      vars:
+        ansible_user: ondre
+
+  vars:
+    ansible_python_interpreter: /usr/bin/python3

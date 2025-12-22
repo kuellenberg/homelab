@@ -1,0 +1,31 @@
+services:
+  authelia:
+    image: authelia/authelia:{{ deploy_versions.authelia | default('latest') }}
+    user: {{ authelia.uid }}:{{ authelia.gid }}
+    restart: unless-stopped
+    volumes:
+      - {{ authelia.root }}/configuration.yml:/config/configuration.yml   # ohne :ro
+      - {{ authelia.root }}/users_database.yml:/config/users_database.yml # ohne :ro
+      - {{ authelia.root }}:/config
+
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:{{ authelia.port }}/api/health || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+
+    labels:
+      ## Expose Authelia through Traefik
+      traefik.enable: 'true'
+      traefik.docker.network: 'proxy'
+      traefik.http.routers.authelia.rule: 'Host(`auth.{{ domain_base }}`)'
+      traefik.http.routers.authelia.entrypoints: 'https'
+      ## Setup Authelia ForwardAuth Middlewares
+      traefik.http.middlewares.authelia.forwardAuth.address: 'http://authelia:9091/api/authz/forward-auth'
+      traefik.http.middlewares.authelia.forwardAuth.trustForwardHeader: 'true'
+      traefik.http.middlewares.authelia.forwardAuth.authResponseHeaders: 'Remote-User,Remote-Groups,Remote-Name,Remote-Email'
+
+networks:
+  default:
+    name: {{ proxy_network }}
+    external: true

@@ -1,0 +1,17 @@
+immich:
+  root: "{{ srv_root }}/immich"
+  uid: 1000
+  gid: 1000
+
+  # The location where your uploaded files are stored
+  upload_location: "./library"
+  # The location where your database files are stored. Network shares are not supported for the database
+  db_data_location: "./postgres"
+  # To set a timezone, uncomment the next line and change Etc/UTC to a TZ identifier from this list:
+  # https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List
+  timezone: "Etc/UTC"
+  # The Immich version to use. You can pin this to a specific version like "v1.71.0"
+  version: "release"
+  # Connection secret for postgres. You should change it to a random password
+  # Please use only the characters `A-Za-z0-9`, without special characters or spaces
+  db_password: "{{ vault_immich_db_password }}"

@@ -1,0 +1,26 @@
+wikijs_root: "{{ srv_root }}/wikijs"
+
+wikijs:
+  root: "{{ wikijs_root }}"
+  uid: 1000
+  gid: 1000
+
+  image:
+    wikijs: "requarks/wiki:2"
+    postgres: "postgres:16-alpine"
+
+  db:
+    name: "wikijs"
+    user: "wikijs"
+    password: "{{ vault_wikijs_db_password }}"
+    tz: "Europe/Berlin"
+
+  limits:
+    enable: false
+    memory: "512M"
+
+  volumes:
+    db: "{{ wikijs_root }}/pg-data"
+    data: "{{ wikijs_root }}/data"
+
+  env_file: "{{ wikijs_root }}/.env" 

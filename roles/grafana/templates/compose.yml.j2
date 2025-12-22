@@ -1,0 +1,35 @@
+services:
+  grafana:
+    image: "grafana/grafana:{{ deploy_versions.grafana | default('latest') }}"
+    container_name: grafana
+    user: "{{ grafana.uid }}:{{ grafana.gid }}"
+    restart: unless-stopped
+    environment:
+      GF_SERVER_ROOT_URL: "https://{{ grafana.domain }}"
+      GF_SERVER_DOMAIN: "{{ grafana.domain }}"
+      GF_AUTH_DISABLE_SIGNOUT_MENU: "true"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+{% for k,v in grafana.env.items() %}
+      {{ k }}: "{{ v }}"
+{% endfor %}
+    volumes:
+      - {{ grafana.root }}/data:/var/lib/grafana
+      - {{ grafana.root }}/provisioning:/etc/grafana/provisioning
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    networks:
+      - {{ grafana.traefik.network }}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`{{ grafana.domain }}`)"
+      - "traefik.http.routers.grafana.entrypoints=websecure"
+      - "traefik.http.routers.grafana.tls=true"
+      - "traefik.http.routers.grafana.tls.certresolver=le"
+      - "traefik.http.routers.grafana.middlewares={{ grafana.traefik.middlewares }}"
+{% for lbl in grafana.extra_labels %}
+      - "{{ lbl }}"
+{% endfor %}
+
+networks:
+  {{ grafana.traefik.network }}:
+    external: true

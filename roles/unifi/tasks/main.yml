@@ -1,0 +1,38 @@
+- name: Ensure dirs
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ unifi.puid }}"
+    group: "{{ unifi.pgid }}"
+    mode: "0755"
+  loop:
+    - "{{ unifi.root }}/mongo-data"
+    - "{{ unifi.root }}/app-data"
+    - "{{ unifi.root }}/init"
+
+- name: Check if init-mongo.sh already exists
+  ansible.builtin.stat:
+    path: "{{ unifi.root }}/init/init-mongo.sh"
+  register: unifi_init_mongo
+
+- name: Deploy init-mongo.sh (first start)
+  ansible.builtin.copy:
+    src: init-mongo.sh
+    dest: "{{ unifi.root }}/init/init-mongo.sh"
+    mode: "0755"
+  when: not unifi_init_mongo.stat.exists
+
+- name: Render compose.yml
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: "{{ unifi.root }}/compose.yml"
+    mode: "0644"
+  notify: Restart UniFi stack
+
+- name: Bring UniFi stack up
+  community.docker.docker_compose_v2:
+    project_src: "{{ unifi.root }}"
+    state: present
+    pull: always
+    files:
+      - compose.yml

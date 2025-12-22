@@ -1,0 +1,8 @@
+nut_:
+  ups_name: "cyberups"
+  nut_password: "{{ vault_nut_password | default('changeme') }}"
+  mqtt_host: "192.168.0.2"
+  mqtt_topic: "rack/ups/status"
+  mqtt_user: "ha"
+  mqtt_pass: "{{ vault_nut_mqtt_pass | default('changeme') }}"
+

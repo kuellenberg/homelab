@@ -1,0 +1,10 @@
+---
+
+nutify_:
+  root: "{{ srv_root }}/nutify"
+  uid: 1000
+  gid: 1000
+  env_file: "{{ srv_root }}/nutify/.env"
+
+  env:
+    SECRET_KEY: "{{ vault_nutify_secret | default('changeme1234567890') }}"

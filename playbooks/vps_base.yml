@@ -1,0 +1,8 @@
+---
+
+- name: VPS Base config
+  hosts: strato_vps
+  gather_facts: true
+  roles:
+    - common
+    - vps_base

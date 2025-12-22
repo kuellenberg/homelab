@@ -1,0 +1,21 @@
+keepalived_vip_instance: "VI_1"
+keepalived_vip_interface: "eth0"
+keepalived_vip_virtual_router_id: 42
+keepalived_vip_advert_int: 1
+
+# Set in host_vars (recommended)
+keepalived_vip_state: "BACKUP"   # MASTER or BACKUP
+keepalived_vip_priority: 100
+keepalived_vip_address: "192.168.0.20/24"
+
+# Auth (VRRP simple password; keep it non-trivial but <= 8 chars for best compatibility)
+keepalived_vip_auth_type: "PASS"
+keepalived_vip_auth_pass: "s3cr3t42"
+
+# Optional behavior
+keepalived_vip_nopreempt: false
+
+# Optional: use unicast to avoid multicast issues (often not needed on a normal LAN)
+keepalived_vip_use_unicast: false
+keepalived_vip_unicast_src_ip: ""      # e.g. 192.168.0.21
+keepalived_vip_unicast_peers: []       # e.g. [192.168.0.22]

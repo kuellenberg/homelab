@@ -1,0 +1,21 @@
+---
+- name: Wireguard server | Select WireGuard config template
+  ansible.builtin.set_fact:
+    wireguard_config_template: wg0.server.conf.j2
+
+- name: Wireguard server | Deploy WireGuard config and service
+  ansible.builtin.include_tasks: ../wireguard_common/tasks/deploy_config.yml
+
+- name: Ensure IP forwarding is enabled (runtime)
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_forward
+    value: "1"
+    state: present
+    reload: true
+
+- name: Ensure IP forwarding is enabled (config file)
+  ansible.builtin.lineinfile:
+    path: /etc/sysctl.conf
+    regexp: '^net.ipv4.ip_forward'
+    line: 'net.ipv4.ip_forward = 1'
+    state: present

@@ -1,0 +1,53 @@
+- name: Ensure /etc/wireguard exists
+  ansible.builtin.file:
+    path: /etc/wireguard
+    state: directory
+    owner: root
+    group: root
+    mode: "0700"
+
+- name: Check if private key exists
+  ansible.builtin.stat:
+    path: "/etc/wireguard/{{ wireguard_interface }}.key"
+  register: wg_key_stat
+
+- name: Generate WireGuard private key (only if missing)
+  ansible.builtin.command: wg genkey
+  register: wg_genkey
+  changed_when: true
+  no_log: true
+  when: not wg_key_stat.stat.exists
+
+- name: Write WireGuard private key (only if missing)
+  ansible.builtin.copy:
+    dest: "/etc/wireguard/{{ wireguard_interface }}.key"
+    content: "{{ wg_genkey.stdout }}\n"
+    owner: root
+    group: root
+    mode: "0600"
+  no_log: true
+  when: not wg_key_stat.stat.exists
+
+# Ab hier: immer aus der Remote-Datei lesen (egal ob neu oder schon vorhanden)
+- name: Read WireGuard private key from remote file
+  ansible.builtin.slurp:
+    src: "/etc/wireguard/{{ wireguard_interface }}.key"
+  register: wg_priv_file
+  no_log: true
+
+- name: Publish wireguard_private_key fact
+  ansible.builtin.set_fact:
+    wireguard_private_key: "{{ (wg_priv_file.content | b64decode).strip() }}"
+  changed_when: false
+  no_log: true
+
+- name: Derive WireGuard public key (remote)
+  ansible.builtin.command: "sh -c 'wg pubkey < /etc/wireguard/{{ wireguard_interface }}.key'"
+  register: wg_pub
+  changed_when: false
+  no_log: true
+
+- name: Publish wireguard_public_key fact
+  ansible.builtin.set_fact:
+    wireguard_public_key: "{{ wg_pub.stdout }}"
+  changed_when: false

@@ -1,0 +1,22 @@
+---
+
+- name: Internal CA (root context)
+  become: true
+  block:
+
+    # 1. Create root CA once
+    - name: Ensure Root CA is present
+      ansible.builtin.import_tasks: ca.yml
+
+    # 2. Create leaf-cert for every service
+    - name: Handle leaf certs for service
+      ansible.builtin.include_tasks: leaf_cert.yml
+      loop: >-
+        {{
+          ca_internal_.services
+          | selectattr('ca.enabled', 'defined')
+          | selectattr('ca.enabled')
+          | list
+        }}
+      loop_control:
+        loop_var: svc

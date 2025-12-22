@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+CONTAINER="{{ gitea_backup.container_name }}"
+HOST_DIR="{{ gitea_backup.host_backup_dir }}"
+PREFIX="{{ gitea_backup.filename_prefix }}"
+STAMP="$(date +"{{ gitea_backup.timestamp_format }}")"
+FILENAME="${PREFIX}-${STAMP}.zip"
+LOCAL_PATH="${HOST_DIR}/${FILENAME}"
+
+# Pfad zur app.ini **im Container** (Docker-rootless Standard laut Docs)
+APP_INI="{{ gitea.app_ini_path | default('/etc/gitea/app.ini') }}"
+
+# wohin Gitea das ZIP im Container schreiben soll (per -f)
+CONTAINER_TMP="/tmp"
+CONTAINER_ZIP="${CONTAINER_TMP}/${FILENAME}"
+
+RSYNC_TARGET="{{ gitea_backup.rsync_target }}"
+RSYNC_PORT="{{ gitea_backup.rsync_port }}"
+RSYNC_BWLIMIT="{{ gitea_backup.rsync_bwlimit }}"
+RSYNC_EXTRA="{{ gitea_backup.rsync_extra_opts }}"
+SSH_KEY="{{ gitea_backup.ssh_key_path }}"
+
+RETENTION_DAYS="{{ gitea_backup.retention_days }}"
+REMOTE_RETENTION_DAYS="{{ gitea_backup.remote_retention_days }}"
+
+D_UID="{{ gitea.uid | default('1000') }}"
+D_GID="{{ gitea.gid | default('1000') }}"
+
+log() { echo "[$(date -Is)] $*"; }
+
+mkdir -p "${HOST_DIR}"
+
+# 1) Dump im Container erstellen (rootless: als git:git) – **mit -c** und expliziter Ausgabedatei
+log "Running: gitea dump -> ${CONTAINER_ZIP}"
+docker exec --user "${D_UID}:${D_GID}" -w "${CONTAINER_TMP}" "${CONTAINER}" \
+  gitea dump -c "${APP_INI}" -f "${CONTAINER_ZIP}"
+
+# 2) ZIP aus dem Container holen
+log "docker cp ${CONTAINER}:${CONTAINER_ZIP}-> ${LOCAL_PATH}"
+docker cp "${CONTAINER}:${CONTAINER_ZIP}" "${LOCAL_PATH}"
+
+# 3) Aufräumen im Container (optional)
+log "remove ${CONTAINER}:${CONTAINER_ZIP}"
+docker exec --user "${D_UID}:${D_GID}" "${CONTAINER}" rm -f "${CONTAINER_ZIP}"
+
+# 4) Basis-Checks
+if [[ ! -s "${LOCAL_PATH}" ]]; then
+  log "ERROR: Backup-Datei wurde nicht erzeugt oder ist leer: ${LOCAL_PATH}"
+  exit 1
+fi
+log "Backup erstellt: ${LOCAL_PATH}"
+
+# 5) Rsync aufs NAS (wenn konfiguriert)
+if [[ -n "${RSYNC_TARGET}" ]]; then
+  log "Rsync -> ${RSYNC_TARGET}"
+  RSYNC_CMD=(rsync -az)
+  [[ -n "${RSYNC_BWLIMIT}" ]] && RSYNC_CMD+=(--bwlimit="${RSYNC_BWLIMIT}")
+  [[ -n "${RSYNC_EXTRA}"   ]] && RSYNC_CMD+=(${RSYNC_EXTRA})
+  RSYNC_CMD+=(-e "ssh -p ${RSYNC_PORT} -i ${SSH_KEY} -o StrictHostKeyChecking=yes")
+  RSYNC_CMD+=("${LOCAL_PATH}" "${RSYNC_TARGET}")
+  "${RSYNC_CMD[@]}"
+  log "Rsync fertig."
+fi
+
+# 6) Lokale Retention
+if [[ "${RETENTION_DAYS}" -gt 0 ]]; then
+  log "Lokale Retention: lösche Backups älter als ${RETENTION_DAYS} Tage"
+  find "${HOST_DIR}" -type f -name "${PREFIX}-*.zip" -mtime +"${RETENTION_DAYS}" -print -delete || true
+fi
+
+# 7) Remote-Retention via SSH+find (vorsichtig!)
+if [[ -n "${RSYNC_TARGET}" && "${REMOTE_RETENTION_DAYS}" -gt 0 ]]; then
+  TARGET_HOST="$(echo "${RSYNC_TARGET}" | awk -F: '{print $1}')"
+  TARGET_DIR="$(echo  "${RSYNC_TARGET}" | awk -F: '{print $2}')"
+  if [[ -n "${TARGET_HOST}" && -n "${TARGET_DIR}" ]]; then
+    log "Remote Retention auf ${TARGET_HOST}:${TARGET_DIR} (>${REMOTE_RETENTION_DAYS} Tage)"
+    ssh -p "${RSYNC_PORT}" -i "${SSH_KEY}" -o StrictHostKeyChecking=yes \
+      "${TARGET_HOST}" "find '${TARGET_DIR}' -type f -name '${PREFIX}-*.zip' -mtime +${REMOTE_RETENTION_DAYS} -print -delete" || true
+  fi
+fi
+
+log "Gitea Backup abgeschlossen."

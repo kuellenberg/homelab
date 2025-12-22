@@ -1,0 +1,5 @@
+- name: Restart traefik_internal
+  community.docker.docker_compose_v2:
+    project_src: /srv/traefik_internal
+    state: present
+    recreate: always

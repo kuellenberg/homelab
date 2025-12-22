@@ -1,0 +1,13 @@
+---
+- name: Wireguard client | Install prerequisites
+  ansible.builtin.include_tasks: ../wireguard_common/tasks/prerequisites.yml
+
+- name: Wireguard client | Generate WireGuard keys
+  ansible.builtin.include_tasks: ../wireguard_common/tasks/keys.yml
+
+- name: Wireguard client | Select WireGuard config template
+  ansible.builtin.set_fact:
+    wireguard_config_template: wg0.client.conf.j2
+
+- name: Wireguard client | Deploy WireGuard config and service
+  ansible.builtin.include_tasks: ../wireguard_common/tasks/deploy_config.yml

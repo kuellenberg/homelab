@@ -1,0 +1,19 @@
+---
+
+vaultwarden:
+  root: "{{ srv_root }}/vaultwarden"
+  uid: 1000
+  gid: 1000
+  env_file: "{{ srv_root }}/vaultwarden/.env" 
+
+  env:
+    DOMAIN: "https://vault.{{ domain_base }}"
+    WEBSOCKET_ENABLED: "true"
+    SIGNUPS_ALLOWED: "false"
+    ROCKET_ADDRESS: "0.0.0.0"
+    ROCKET_PORT: "80"
+    ADMIN_TOKEN: '{{ vault_vaultwarden_admin_token | regex_replace("\$", "$$") }}'
+
+  helper:    
+    enable: false
+    readonly: false

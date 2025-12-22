@@ -1,0 +1,10 @@
+---
+
+traefik_vps:
+  root: /srv/traefik_vps
+
+  # E-Mail für Let's Encrypt 
+  email: "{{ acme_email | default('postmaster@kuellenberg.eu') }}"
+
+  # Traefik-Image
+  image: "traefik:latest"

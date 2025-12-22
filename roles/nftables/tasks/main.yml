@@ -1,0 +1,13 @@
+- name: Deploy nftables config
+  ansible.builtin.template:
+    src: nftables-smallbox.conf.j2
+    dest: /etc/nftables.conf
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Enable and restart nftables
+  ansible.builtin.service:
+    name: nftables
+    enabled: true
+    state: started

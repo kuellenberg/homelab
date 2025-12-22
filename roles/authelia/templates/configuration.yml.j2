@@ -1,0 +1,44 @@
+# Authelia v4.38+ minimal, file-backend
+
+# Reset-Password JWT (ersetzt jwt_secret)
+identity_validation:
+  reset_password:
+    jwt_secret: {{ vault_authelia_jwt_secret }}
+
+theme: auto
+
+server:
+  address: tcp://0.0.0.0:{{ authelia.port }}
+
+log:
+  level: info
+
+session:
+  name: authelia_session
+  same_site: lax
+  inactivity: 1h
+  expiration: 1d
+  secret: {{ vault_authelia_session_secret }}
+  cookies:
+    - name: authelia_session
+      domain: {{ authelia.cookie_domain }}
+      authelia_url: https://auth.{{ authelia.domain }}
+
+storage:
+  local:
+    path: /config/db.sqlite3
+  encryption_key: {{ vault_authelia_storage_encryption_key }}
+
+notifier:
+  filesystem:
+    filename: /config/notification.txt
+
+authentication_backend:
+  file:
+    path: /config/users_database.yml
+
+access_control:
+  default_policy: {{ authelia.default_policy }}
+  rules:
+    - domain: "*.{{ authelia.domain }}"
+      policy: one_factor

@@ -1,0 +1,22 @@
+services:
+  gitea:
+    container_name: gitea
+    image: "docker.gitea.com/gitea:{{ deploy_versions.gitea | default('latest-rootless') }}"
+    restart: always
+    user: "{{ gitea.uid }}:{{ gitea.gid }}"
+    volumes:
+      - {{ gitea.root }}/data:/var/lib/gitea
+      - {{ gitea.root }}/config:/etc/gitea
+      - {{ gitea.root }}/backup:/tmp
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    ports:
+      - "{{ gitea.http_port }}:3000"
+      - "{{ gitea.ssh_port }}:2222"
+    networks:
+      - default
+      - proxy
+
+networks:
+  proxy:
+    external: true

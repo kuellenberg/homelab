@@ -1,0 +1,34 @@
+# Ansible
+.ansible/
+.retry
+*.retry
+
+# Vault / Editor Backups
+*.vault
+*.yml~
+*.yaml~
+*.swp
+*.swo
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Editors
+.vscode/
+.idea/
+
+# Environment
+.env
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+
+# pre-commit
+.pre-commit-cache/

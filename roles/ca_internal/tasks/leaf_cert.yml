@@ -1,0 +1,108 @@
+---
+
+- name: Internal CA – leaf certificate for {{ svc.name }}
+  vars:
+    domain: "{{ svc.domain }}"
+    out_dir: "{{ svc.out_dir | default(ca_internal_.out_dir + '/' + svc.name) }}"
+    key_path: "{{ out_dir }}/{{ domain }}.key"
+    crt_path: "{{ out_dir }}/{{ domain }}.crt"
+    csr_path: "{{ ca_internal_.dir }}/{{ domain }}.csr"
+    ext_path: "{{ ca_internal_.dir }}/{{ domain }}.ext"
+    ca_crt: "{{ ca_internal_.ca_crt }}"
+    ca_key: "{{ ca_internal_.ca_key }}"
+    leaf_days: "{{ ca_internal_.leaf.days }}"
+    rotate_key: "{{ ca_internal_.leaf.rotate_key }}"
+    renew_before_days: "{{ ca_internal_.leaf.renew_before_days }}"
+
+  block:
+    - name: Ensure output cert directory exists
+      ansible.builtin.file:
+        path: "{{ out_dir }}"
+        state: directory
+        mode: "0755"
+
+    # --- Decide whether renewal is needed ---
+    - name: Check if current leaf certificate exists
+      ansible.builtin.stat:
+        path: "{{ crt_path }}"
+      register: leaf_crt_stat
+
+    - name: Get leaf certificate remaining days (if exists)
+      ansible.builtin.shell: |
+        set -euo pipefail
+        enddate="$(openssl x509 -in "{{ crt_path }}" -noout -enddate | cut -d= -f2)"
+        python3 -c << PY '
+        import sys,datetime as dt,email.utils;
+        end=email.utils.parsedate_to_datetime(sys.argv[1]);
+        now=dt.datetime.now(dt.timezone.utc);
+        print((end-now).days)' "$enddate"
+        PY
+      args:
+        executable: /bin/bash
+      register: leaf_days_left
+      when: leaf_crt_stat.stat.exists
+      changed_when: false
+
+    # - name: Debug variable
+    #   ansible.builtin.debug:
+    #     var: leaf_days_left
+
+    - name: Decide renewal
+      ansible.builtin.set_fact:
+        needs_renewal: >-
+          {{
+            (not leaf_crt_stat.stat.exists)
+            or (leaf_days_left.stdout | int < renew_before_days)
+          }}
+
+    # --- Generate new leaf material (with key rotation) ---
+    - name: Generate new leaf private key (on renewal)
+      ansible.builtin.command: "openssl genrsa -out {{ key_path }} 2048"
+      when: needs_renewal and rotate_key
+      notify: Restart traefik_internal
+      # noqa no-changed-when
+
+    - name: Generate leaf CSR (on renewal)
+      ansible.builtin.command: >
+        openssl req -new
+        -key {{ key_path }}
+        -out {{ csr_path }}
+        -subj "/CN={{ domain }}"
+      when: needs_renewal
+      notify: Restart traefik_internal
+      # noqa no-changed-when
+
+    - name: Write leaf extensions file (SAN etc.) (on renewal)
+      ansible.builtin.copy:
+        dest: "{{ ext_path }}"
+        mode: "0644"
+        content: |
+          authorityKeyIdentifier=keyid,issuer
+          basicConstraints=CA:FALSE
+          keyUsage = digitalSignature, keyEncipherment
+          extendedKeyUsage = serverAuth
+          subjectAltName = @alt_names
+
+          [alt_names]
+          DNS.1 = {{ domain }}
+      when: needs_renewal
+      notify: Restart traefik_internal
+
+    - name: Sign leaf certificate with CA (on renewal)
+      ansible.builtin.command: >
+        openssl x509 -req
+        -in {{ csr_path }}
+        -CA {{ ca_crt }} -CAkey {{ ca_key }}
+        -CAcreateserial
+        -out {{ crt_path }}
+        -days {{ leaf_days }} -sha256
+        -extfile {{ ext_path }}
+      when: needs_renewal
+      notify: Restart traefik_internal
+      # noqa no-changed-when
+
+    - name: Set strict permissions on private keys
+      ansible.builtin.file:
+        path: "{{ key_path }}"
+        mode: "0600"
+      when: leaf_crt_stat.stat.exists or needs_renewal

@@ -1,0 +1,41 @@
+---
+- name: Ensure nutify directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ nutify_.uid }}"
+    group: "{{ nutify_.gid }}"
+    mode: "0755"
+  loop:
+    - "{{ nutify_.root }}"
+    - "{{ nutify_.root }}/logs"
+    - "{{ nutify_.root }}/instance"
+    - "{{ nutify_.root }}/ssl"
+    - "{{ nutify_.root }}/etc/nut"
+
+- name: Check secrets present (optional)
+  ansible.builtin.assert:
+    that:
+      - vault_nutify_secret is defined
+      - vault_nutify_secret is string
+    fail_msg: "Nutify secret missing in vault."
+
+- name: Render environment file (.env)
+  ansible.builtin.template:
+    src: env.j2
+    dest: "{{ nutify_.env_file }}"
+    mode: "0600"
+
+- name: Render nutify compose
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: "{{ nutify_.root }}/compose.yml"
+    mode: "0644"
+
+- name: Deploy Nutify (compose, pull+up)
+  community.docker.docker_compose_v2:
+    project_src: "{{ nutify_.root }}"
+    files: ["compose.yml"]
+    state: present
+    pull: always
+    recreate: auto

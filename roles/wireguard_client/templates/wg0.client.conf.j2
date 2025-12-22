@@ -1,0 +1,18 @@
+[Interface]
+Address = {{ wireguard_address }}
+PrivateKey = {{ wireguard_private_key }}
+
+# Replaced by nftables role
+# PostUp = iptables -A FORWARD -i wg0 -j ACCEPT
+# PostUp = iptables -A FORWARD -o wg0 -j ACCEPT
+# PostUp = iptables -t nat -A POSTROUTING -o {{ wireguard_masq_interface }} -j MASQUERADE
+# PostDown = iptables -D FORWARD -i wg0 -j ACCEPT
+# PostDown = iptables -D FORWARD -o wg0 -j ACCEPT
+# PostDown = iptables -t nat -D POSTROUTING -o {{ wireguard_masq_interface }} -j MASQUERADE
+
+[Peer]
+# VPS
+PublicKey = {{ wireguard_server_public_key }}
+Endpoint = {{ wireguard_endpoint_host }}:{{ wireguard_endpoint_port }}
+AllowedIPs = {{ wireguard_allowed_ips | join(", ") }}
+PersistentKeepalive = {{ wireguard_persistent_keepalive }}

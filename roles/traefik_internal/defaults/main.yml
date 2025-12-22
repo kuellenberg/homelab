@@ -1,0 +1,9 @@
+---
+
+traefik_internal_:
+  root: /srv/traefik_internal
+  image: "traefik:latest"
+  uid: 1000
+  gid: 1000
+
+  services: "{{ internal_services | default([]) }}"

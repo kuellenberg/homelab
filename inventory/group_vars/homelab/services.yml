@@ -1,0 +1,45 @@
+internal_services:
+  - name: immich
+    domain: immich.ondre.de
+    ca:
+      enabled: true
+    traefik:
+      internal:
+        enabled: true
+        backend: "http://immich:2283"
+
+  - name: gitea
+    domain: git.ondre.de
+    ca:
+      enabled: true
+    traefik:
+      internal:
+        enabled: true
+        backend: "http://gitea:3333"
+
+  - name: paperless
+    domain: paperless.ondre.de
+    ca:
+      enabled: true
+    traefik:
+      internal:
+        enabled: true
+        backend: "http://paperless:8000"
+
+  - name: wikijs
+    domain: wiki.ondre.de
+    ca:
+      enabled: true
+    traefik:
+      internal:
+        enabled: true
+        backend: "http://wikijs:3000"
+
+  - name: unifi
+    domain: unifi.ondre.de
+    ca:
+      enabled: true
+    traefik:
+      internal:
+        enabled: true
+        backend: "http://unifi-network-application:8443"

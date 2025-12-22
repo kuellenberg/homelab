@@ -1,0 +1,6 @@
+---
+- name: Wireguard server | Install prerequisites
+  ansible.builtin.include_tasks: ../wireguard_common/tasks/prerequisites.yml
+
+- name: Wireguard server | Generate WireGuard keys
+  ansible.builtin.include_tasks: ../wireguard_common/tasks/keys.yml

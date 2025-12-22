@@ -1,0 +1,28 @@
+timezone: Europe/Berlin
+locale_lang: de_DE.UTF-8
+
+srv_root: /srv
+docker_bin: "/usr/bin/docker"
+
+domain_base: kuellenberg.eu
+acme_email: postmaster@kuellenberg.eu
+proxy_network: proxy
+
+base_packages: 
+  - htop
+  - btop
+  - vim
+  - nano
+  - git
+  - curl
+  - wget
+  - tmux
+  - unzip
+  - ca-certificates
+  - lsb-release
+  - net-tools
+  - iproute2
+  - rsync
+  - iperf3
+  - gnupg
+  - dnsutils

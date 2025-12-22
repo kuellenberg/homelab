@@ -1,0 +1,28 @@
+---
+
+- name: Homelab Servers
+  hosts: homelab
+  gather_facts: true
+  roles:
+    - role: common
+      tags: ['common']
+    - role: gitea
+      tags: ['gitea']
+    - role: paperless
+      tags: ['paperless']
+    - role: vaultwarden
+      tags: ['vaultwarden']
+    - role: immich
+      tags: ['immich']
+    - role: unifi
+      tags: ['unifi']
+    - role: wikijs
+      tags: ['wikijs']
+    - role: nut
+      tags: ['nut']
+    # - role: nutify
+    #   tags: ['nutify']
+    - role: keepalived
+      tags: ['keepalived']
+    - role: msmtp
+      tags: ['msmtp']

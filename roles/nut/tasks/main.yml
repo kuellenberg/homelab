@@ -1,0 +1,132 @@
+- name: Install NUT and mosquitto clients
+  become: true
+  ansible.builtin.apt:
+    name:
+      - nut
+      - mosquitto-clients
+    state: present
+    update_cache: true
+
+- name: Configure NUT master mode
+  become: true
+  ansible.builtin.copy:
+    dest: /etc/nut/nut.conf
+    mode: "0640"
+    owner: root
+    group: nut
+    content: |
+      MODE=netserver
+  notify: "nut restart"
+
+- name: Configure NUT server settings
+  become: true
+  ansible.builtin.copy:
+    dest: /etc/nut/upsd.conf
+    mode: "0640"
+    owner: root
+    group: nut
+    content: |
+      LISTEN 0.0.0.0 3493
+      MAXCONN 16
+  notify: "nut restart"
+
+- name: Configure UPS definition
+  become: true
+  ansible.builtin.copy:
+    dest: /etc/nut/ups.conf
+    mode: "0640"
+    owner: root
+    group: nut
+    content: |
+      [{{ nut_.ups_name }}]
+          driver = usbhid-ups
+          port = auto
+          desc = "CyberPower UPS"
+          pollinterval = 10
+  notify: "nut restart"
+
+- name: Configure NUT server users
+  become: true
+  ansible.builtin.copy:
+    dest: /etc/nut/upsd.users
+    mode: "0640"
+    owner: root
+    group: nut
+    content: |
+      [mon_primary]
+          password = {{ vault_nut_prim_mon_password }}
+          upsmon primary
+
+      [mon_secondary]
+          password = {{ vault_nut_sec_mon_password }}
+          upsmon secondary
+
+      [admin]
+          password = {{ vault_nut_admin_password }}
+          actions = SET
+          instcmds = ALL
+  notify: "nut restart"
+
+- name: Configure UPSMON for master
+  become: true
+  ansible.builtin.copy:
+    dest: /etc/nut/upsmon.conf
+    mode: "0640"
+    owner: root
+    group: nut
+    content: |
+      MONITOR {{ nut_.ups_name }}@localhost 1 mon_primary {{ vault_nut_prim_mon_password }} primary
+      MINSUPPLIES 1
+      SHUTDOWNCMD "/sbin/shutdown -h +0"
+      NOTIFYFLAG ONLINE SYSLOG+EXEC+WALL
+      NOTIFYFLAG ONBATT SYSLOG+EXEC+WALL
+      NOTIFYFLAG LOWBATT SYSLOG+EXEC+WALL
+      FINALDELAY 240
+      NOTIFYCMD /usr/local/bin/nut_notify.sh
+  notify: "nut restart"
+
+- name: Create mail notification script
+  become: true
+  ansible.builtin.copy:
+    dest: /usr/local/bin/nut_notify.sh
+    mode: "0755"
+    content: |
+      #!/bin/sh
+      EVENT="$1"
+      UPS="$2"
+      HOST="$(hostname)"
+      SUBJECT="NUT [$EVENT] on $HOST"
+      BODY="UPS: $UPS
+      Event: $EVENT
+      Host: $HOST
+      Time: $(date)"
+      echo "$BODY" | mail -s "$SUBJECT" {{ nut_.alert_email }}
+
+- name: Create MQTT notification script
+  become: true
+  ansible.builtin.copy:
+    dest: /usr/local/bin/nut_mqtt_notify.sh
+    mode: "0755"
+    content: |
+      #!/bin/bash
+      STATUS=$(upsc {{ nut_.ups_name }}@localhost ups.status)
+      mosquitto_pub -h {{ nut_.mqtt_host }} -t "{{ nut_.mqtt_topic }}" \
+          -u "{{ nut_.mqtt_user }}" -P "{{ nut_.mqtt_pass }}" \
+          -m "{\"status\": \"$STATUS\", \"timestamp\": \"$(date -Iseconds)\"}"
+
+- name: Enable and start NUT services
+  become: true
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop:
+    - nut-driver@{{ nut_.ups_name }}
+    - nut-server
+    - nut-monitor
+
+- name: Check NUT status via upsc
+  ansible.builtin.command: upsc {{ nut_.ups_name }}@localhost
+  register: upsc_result
+  changed_when: false
+  failed_when: upsc_result.rc != 0

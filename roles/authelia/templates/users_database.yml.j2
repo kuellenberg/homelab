@@ -1,0 +1,11 @@
+users:
+{% for u in vault_authelia_users %}
+  {{ u.username }}:
+    displayname: "{{ u.displayname }}"
+    email: "{{ u.email }}"
+    password: "{{ u.password_hash }}"
+    groups:
+{% for g in u.groups|default(['admins']) %}
+      - {{ g }}
+{% endfor %}
+{% endfor %}

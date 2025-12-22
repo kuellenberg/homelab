@@ -1,0 +1,52 @@
+services:
+  db:
+    image: "{{ wikijs.image.postgres }}"
+    user: {{ wikijs.uid }}:{{ wikijs.gid }}
+    container_name: wikijs-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: "${WIKIJS_DB_NAME}"
+      POSTGRES_USER: "${WIKIJS_DB_USER}"
+      POSTGRES_PASSWORD: "${WIKIJS_DB_PASSWORD}"
+      TZ: "{{ wikijs.db.tz }}"
+    volumes:
+      - "{{ wikijs.volumes.db }}:/var/lib/postgresql/data"
+{% if wikijs.limits.enable %}
+    deploy:
+      resources:
+        limits:
+          memory: "{{ wikijs.limits.memory }}"
+{% endif %}
+
+  wiki:
+    image: "{{ wikijs.image.wikijs }}"
+    user: {{ wikijs.uid }}:{{ wikijs.gid }}
+    container_name: wikijs
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      DB_TYPE: "postgres"
+      DB_HOST: "db"
+      DB_PORT: "5432"
+      DB_NAME: "${WIKIJS_DB_NAME}"
+      DB_USER: "${WIKIJS_DB_USER}"
+      DB_PASS: "${WIKIJS_DB_PASSWORD}"
+      TZ: "{{ wikijs.db.tz }}"
+    volumes:
+      - "{{ wikijs.volumes.data }}:/var/wiki"
+    ports:
+      - "3000:3000"
+    networks:
+      - default
+      - proxy
+{% if wikijs.limits.enable %}
+    deploy:
+      resources:
+        limits:
+          memory: "{{ wikijs.limits.memory }}"
+{% endif %}
+
+networks:
+  proxy:
+    external: true

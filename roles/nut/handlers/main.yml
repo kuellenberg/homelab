@@ -1,0 +1,21 @@
+---
+# Handler: Restart NUT driver
+- name: Restart NUT driver
+  ansible.builtin.service:
+    name: "nut-driver@{{ nut_.ups_name }}"
+    state: restarted
+  listen: "nut restart"
+
+# Handler: Restart NUT server (upsd)
+- name: Restart NUT server
+  ansible.builtin.service:
+    name: nut-server
+    state: restarted
+  listen: "nut restart"
+
+# Handler: Restart NUT monitor (upsmon)
+- name: Restart NUT monitor
+  ansible.builtin.service:
+    name: nut-monitor
+    state: restarted
+  listen: "nut restart"

@@ -1,0 +1,54 @@
+---
+
+- name: Ensure Traefik VPS directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ docker_user }}"
+    group: "{{ docker_group }}"
+    mode: "0755"
+  loop:
+    - "{{ traefik_vps.root }}"
+    - "{{ traefik_vps.root }}/dynamic"
+
+- name: Ensure acme.json exists
+  ansible.builtin.copy:
+    dest: "{{ traefik_vps.root }}/acme.json"
+    content: "{}\n"
+    force: false
+    mode: "0600"
+
+- name: Render main Traefik config
+  ansible.builtin.template:
+    src: traefik.yml.j2
+    dest: "{{ traefik_vps.root }}/traefik.yml"
+    mode: "0644"
+
+- name: Render Traefik service configs
+  ansible.builtin.template:
+    src: service.yml.j2
+    dest: "{{ traefik_vps.root }}/dynamic/{{ item.name }}.yml"
+    mode: "0644"
+  loop: "{{ traefik_services }}"
+
+- name: Render Traefik dashboard service config
+  ansible.builtin.template:
+    src: dashboard.yml.j2
+    dest: "{{ traefik_vps.root }}/dashboard.yml"
+    mode: "0644"
+
+- name: Render Traefik VPS compose file
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: "{{ traefik_vps.root }}/compose.yml"
+    mode: "0644"
+
+- name: Deploy Traefik VPS (compose v2)
+  community.docker.docker_compose_v2:
+    project_src: "{{ traefik_vps.root }}"
+    files: ["compose.yml"]
+    state: present
+    pull: always
+    recreate: auto
+  tags:
+    - traefik_vps

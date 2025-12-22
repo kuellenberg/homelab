@@ -1,0 +1,13 @@
+---
+
+- name: Check msmtp configuration
+  become: true
+  ansible.builtin.shell: |
+    set -euo pipefail
+    echo "Test email from msmtp" \
+      | /usr/bin/mail -s "msmtp test from {{ inventory_hostname }} via ansible" {{ msmtp_.from_address }}
+  args:
+    executable: /bin/bash
+  register: msmtp_check
+  changed_when: false
+  failed_when: msmtp_check.rc != 0

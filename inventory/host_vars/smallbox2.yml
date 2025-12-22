@@ -1,0 +1,26 @@
+keepalived_vip_state: "MASTER"
+keepalived_vip_priority: 200
+keepalived_vip_interface: "eth0"
+keepalived_vip_address: "192.168.0.10/24"
+keepalived_vip_virtual_router_id: 42
+keepalived_vip_auth_pass: "s3cr3t42"
+
+wireguard_address: "10.42.0.2/24"
+
+# wireguard_instances:
+#   - name: mgmt
+#     interface: wg0
+#     address: "10.42.0.2/24"
+#     endpoint_host: "kuellenberg.eu"
+#     endpoint_port: 51820
+#     allowed_ips: ["10.42.0.0/24"]
+#     persistent_keepalive: 25
+
+#   - name: ha_gw
+#     interface: wg1
+
+#     address: "10.43.0.2/32"
+#     endpoint_host: "kuellenberg.eu"
+#     endpoint_port: 51821
+#     allowed_ips: ["10.43.0.0/24", "192.168.0.2/32"]
+#     persistent_keepalive: 25

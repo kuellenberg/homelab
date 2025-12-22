@@ -1,0 +1,19 @@
+services:
+  traefik:
+    image: "{{ traefik_vps.image }}"
+    container_name: traefik_vps
+    command:
+      - "--configFile=/etc/traefik/traefik.yml"
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - "{{ traefik_vps.root }}/traefik.yml:/etc/traefik/traefik.yml:ro"
+      - "{{ traefik_vps.root }}/dynamic:/etc/traefik/dynamic:ro"
+      - "{{ traefik_vps.root }}/acme.json:/etc/traefik/acme.json"
+    restart: unless-stopped
+
+networks:
+  default:
+    name: {{ proxy_network }}
