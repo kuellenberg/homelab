@@ -16,7 +16,7 @@
   become: true
   gather_facts: true
   vars:
-    wg_server_host: "{{ groups['wireguard_server'][0] }}"
+    wg_server_host: "{{ groups['vps'][0] }}"
     wireguard_server_public_key: "{{ hostvars[wg_server_host].wireguard_public_key }}"
   tasks:
     - name: Clients | full

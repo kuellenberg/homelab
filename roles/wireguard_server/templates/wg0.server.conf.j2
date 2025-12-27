@@ -6,7 +6,7 @@ PrivateKey = {{ wireguard_private_key }}
 # PostUp =
 # PostDown =
 
-{% for host in groups['wireguard_clients'] | sort %}
+{% for host in groups['homelab'] | sort %}
 [Peer]
 # {{ host }}
 PublicKey = {{ hostvars[host].wireguard_public_key }}

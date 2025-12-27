@@ -1,13 +1,43 @@
-- name: Deploy nftables config
+- name: Ensure nftables include directory exists
+  ansible.builtin.file:
+    path: /etc/nftables.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Deploy nftables loader config
   ansible.builtin.template:
-    src: nftables-smallbox.conf.j2
+    src: nftables.conf.j2
     dest: /etc/nftables.conf
     owner: root
     group: root
-    mode: '0644'
+    mode: "0644"
+  notify: Restart nftables
 
-- name: Enable and restart nftables
+- name: Deploy base nftables rules
+  ansible.builtin.template:
+    src: nftables.d/10-smallbox-base.nft.j2
+    dest: /etc/nftables.d/10-smallbox-base.nft
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart nftables
+
+- name: Deploy hasi-forward rules (WG<->LAN via DOCKER-USER)
+  ansible.builtin.template:
+    src: nftables.d/90-hasi-forward.nft.j2
+    dest: /etc/nftables.d/90-hasi-forward.nft
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart nftables
+
+- name: Enable nftables service
   ansible.builtin.service:
     name: nftables
     enabled: true
-    state: started
+
+- name: Validate nftables config (syntax check)
+  ansible.builtin.command: nft -c -f /etc/nftables.conf
+  changed_when: false

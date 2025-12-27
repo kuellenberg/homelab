@@ -1,0 +1,17 @@
+# WG -> genau ein LAN-Host (wg_lan_host), via Docker/iptables-nft pipeline (DOCKER-USER)
+
+table ip filter {
+  chain hasi-forward {
+    # WG -> LAN Host
+    iifname "wg0" oifname "eth0" ip daddr {{ wg_lan_host | default("192.168.0.2") }} accept
+
+    # LAN Host -> WG (nur Rückverkehr)
+    iifname "eth0" oifname "wg0" ip saddr {{ wg_lan_host | default("192.168.0.2") }} ct state established,related accept
+
+    return
+  }
+
+  chain DOCKER-USER {
+    jump hasi-forward
+  }
+}
