@@ -13,7 +13,10 @@ services:
       - "{{ traefik_vps.root }}/dynamic:/etc/traefik/dynamic:ro"
       - "{{ traefik_vps.root }}/acme.json:/etc/traefik/acme.json"
     restart: unless-stopped
+    networks:
+      - proxy
 
 networks:
-  default:
+  proxy:
+    external: true
     name: {{ proxy_network }}

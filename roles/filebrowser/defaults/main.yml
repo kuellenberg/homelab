@@ -1,0 +1,10 @@
+filebrowser_:
+  root: /srv/filebrowser
+  image: filebrowser/filebrowser:latest
+  domain: files.kuellenberg.eu
+  uid: 1000
+  gid: 1000
+  internal_port: 80
+  external_port: 8080
+  proxy_network: proxy
+  admin_user: "admin"

@@ -1,0 +1,27 @@
+services:
+  filebrowser:
+    image: {{ filebrowser_.image }}
+    container_name: filebrowser
+    environment:
+      - PUID={{ filebrowser_.uid }}
+      - PGID={{ filebrowser_.gid }}
+    volumes:
+      - {{ filebrowser_.root }}/files:/srv
+      - {{ filebrowser_.root }}/data:/database
+      - {{ filebrowser_.root }}/config:/config
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network={{ proxy_network }}"
+      - "traefik.http.routers.filebrowser.rule=Host(`{{ filebrowser_.domain }}`)"
+      - "traefik.http.routers.filebrowser.entrypoints=https"
+      - "traefik.http.routers.filebrowser.tls=true"
+      - "traefik.http.routers.filebrowser.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.filebrowser.service=filebrowser"
+      - "traefik.http.services.filebrowser.loadbalancer.server.port={{ filebrowser_.internal_port }}"
+    networks:
+      - {{ proxy_network }}
+
+networks:
+  {{ proxy_network }}:
+    external: true

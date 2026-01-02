@@ -12,7 +12,7 @@ http:
       service: {{ item.name }}-svc
       {% if item.authelia -%}
       middlewares:
-        - authelia@docker
+        - authelia@file
       {% endif %}
 
   services:

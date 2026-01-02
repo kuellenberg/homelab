@@ -1,4 +1,8 @@
 ---
+- name: Ensure proxy network exists
+  community.docker.docker_network:
+    name: "{{ proxy_network }}"
+    state: present
 
 - name: Ensure Traefik VPS directories exist
   ansible.builtin.file:
@@ -24,6 +28,12 @@
     dest: "{{ traefik_vps.root }}/traefik.yml"
     mode: "0644"
 
+- name: Render common Traefik config
+  ansible.builtin.template:
+    src: _common.yml.j2
+    dest: "{{ traefik_vps.root }}/dynamic/_common.yml"
+    mode: "0644"
+
 - name: Render Traefik service configs
   ansible.builtin.template:
     src: service.yml.j2
@@ -34,7 +44,7 @@
 - name: Render Traefik dashboard service config
   ansible.builtin.template:
     src: dashboard.yml.j2
-    dest: "{{ traefik_vps.root }}/dashboard.yml"
+    dest: "{{ traefik_vps.root }}/dynamic/dashboard.yml"
     mode: "0644"
 
 - name: Render Traefik VPS compose file

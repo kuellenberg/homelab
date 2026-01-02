@@ -39,3 +39,8 @@ traefik_services:
     host: ha.kuellenberg.eu
     backend: http://192.168.0.2:8123
     authelia: false
+
+  - name: truenas
+    host: truenas.kuellenberg.eu
+    backend: http://192.168.0.101
+    authelia: true

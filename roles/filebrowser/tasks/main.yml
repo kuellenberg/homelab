@@ -1,0 +1,51 @@
+- name: Ensure filebrowser directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ filebrowser_.uid }}"
+    group: "{{ filebrowser_.gid }}"
+    mode: "0755"
+  loop:
+    - "{{ filebrowser_.root }}/"
+    - "{{ filebrowser_.root }}/data"
+    - "{{ filebrowser_.root }}/config"
+    - "{{ filebrowser_.root }}/files"
+
+- name: Deploy filebrowser compose file
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: "{{ filebrowser_.root }}/compose.yml"
+    mode: "0644"
+
+- name: Start filebrowser
+  community.docker.docker_compose_v2:
+    project_src: "{{ filebrowser_.root }}"
+    files:
+      - compose.yml
+    state: present
+    pull: always
+
+# - name: Wait for filebrowser container to become healthy
+#   ansible.builtin.command: >
+#     docker inspect -f '{{'{{'}}.State.Health.Status{{'}}'}}' filebrowser
+#   register: fb_health
+#   changed_when: false
+#   until: fb_health.stdout.strip() == "healthy"
+#   retries: 30
+#   delay: 2
+
+# - name: Try update admin password
+#   ansible.builtin.command: >
+#     docker exec filebrowser filebrowser users update {{ filebrowser_.admin_user | default('admin') }}
+#     --password '{{ vault_filebrowser_admin_password }}'
+#   register: fb_pw_update
+#   failed_when: false
+#   changed_when: fb_pw_update.rc == 0
+#   # no_log: true
+
+# - name: Create admin user if missing
+#   ansible.builtin.command: >
+#     docker exec filebrowser filebrowser users add {{ filebrowser_.admin_user | default('admin') }}
+#     '{{ vault_filebrowser_admin_password }}' --perm.admin
+#   when: fb_pw_update.rc != 0
+#   # no_log: true
