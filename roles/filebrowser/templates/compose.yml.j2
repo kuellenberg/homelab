@@ -1,6 +1,6 @@
 services:
   filebrowser:
-    image: {{ filebrowser_.image }}
+    image: "{{ deploy_images.filebrowser.image }}:{{ deploy_images.filebrowser.tag }}"
     container_name: filebrowser
     environment:
       - PUID={{ filebrowser_.uid }}

@@ -6,3 +6,6 @@
   roles:
     - common
     - vps_base
+    - traefik_vps
+    - authelia
+    - filebrowser

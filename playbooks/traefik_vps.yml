@@ -1,7 +1,0 @@
----
-
-- name: VPS Traefik Config
-  hosts: strato_vps
-  roles:
-    - traefik_vps
-    - authelia

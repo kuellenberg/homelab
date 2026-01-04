@@ -37,7 +37,7 @@ services:
 
   webserver:
     container_name: paperless
-    image: "ghcr.io/paperless-ngx/paperless-ngx:{{ deploy_versions.paperless | default('latest') }}"
+    image: "{{ deploy_images.paperless.image }}:{{ deploy_images.paperless.tag | default('latest') }}"
     restart: unless-stopped
     depends_on:
       - broker

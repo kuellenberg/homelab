@@ -7,7 +7,7 @@
 #
 # The compose file on main may not be compatible with the latest release.
 
-{% set immich_version = deploy_versions.immich | default('latest') %}
+{% set immich_version = deploy_images.immich.tag | default('release') %}
 
 name: immich
 

@@ -1,6 +1,6 @@
 services:
   traefik_internal:
-    image: "{{ traefik_internal_.image }}"
+    image: "{{ deploy_images.traefik.image }}:{{ deploy_images.traefik.tag | default('latest') }}"
     container_name: traefik_internal
     command:
       - "--configFile=/etc/traefik/traefik.yml"

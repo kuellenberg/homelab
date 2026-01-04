@@ -20,7 +20,7 @@ services:
       - "{{ unifi.root }}/init/init-mongo.sh:/docker-entrypoint-initdb.d/000-init-mongo.sh:ro"
 
   unifi-network-application:
-    image: "lscr.io/linuxserver/unifi-network-application:{{ deploy_versions.unifi | default('latest') }}"
+    image: "{{ deploy_images.unifi.image }}:{{ deploy_images.unifi.tag | default('latest') }}"
     container_name: unifi-network-application
     restart: unless-stopped
     depends_on:

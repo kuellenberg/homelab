@@ -1,6 +1,6 @@
 services:
   grafana:
-    image: "grafana/grafana:{{ deploy_versions.grafana | default('latest') }}"
+    image: "{{ deploy_images.grafana.image }}:{{ deploy_images.grafana.tag | default('latest') }}"
     container_name: grafana
     user: "{{ grafana.uid }}:{{ grafana.gid }}"
     restart: unless-stopped

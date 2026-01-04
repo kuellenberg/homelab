@@ -1,7 +1,6 @@
 filebrowser_:
   root: /srv/filebrowser
-  image: filebrowser/filebrowser:latest
-  domain: files.kuellenberg.eu
+  domain: files.{{ domain_base }}
   uid: 1000
   gid: 1000
   internal_port: 80

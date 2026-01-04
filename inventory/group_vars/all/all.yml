@@ -26,3 +26,5 @@ base_packages:
   - iperf3
   - gnupg
   - dnsutils
+  - jq
+  - skopeo

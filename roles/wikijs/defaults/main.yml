@@ -6,7 +6,7 @@ wikijs:
   gid: 1000
 
   image:
-    wikijs: "requarks/wiki:2"
+    wikijs: "{{ deploy_images.wikijs.image }}:{{ deploy_images.wikijs.tag }}"
     postgres: "postgres:16-alpine"
 
   db:
@@ -23,4 +23,4 @@ wikijs:
     db: "{{ wikijs_root }}/pg-data"
     data: "{{ wikijs_root }}/data"
 
-  env_file: "{{ wikijs_root }}/.env" 
+  env_file: "{{ wikijs_root }}/.env"

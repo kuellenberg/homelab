@@ -1,6 +1,6 @@
 services:
   vaultwarden:
-    image: "vaultwarden/server:{{ deploy_versions.vaultwarden | default('latest') }}"
+    image: "{{ deploy_images.vaultwarden.image }}:{{ deploy_images.vaultwarden.tag | default('latest') }}"
     container_name: vaultwarden
     user: "{{ vaultwarden.uid }}:{{ vaultwarden.gid }}"
     restart: unless-stopped

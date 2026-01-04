@@ -26,3 +26,8 @@
       tags: ['keepalived']
     - role: msmtp
       tags: ['msmtp']
+      
+    - role: traefik_internal
+      tags: ['traefik_internal']
+    - role: ca_internal
+      tags: ['ca_internal']

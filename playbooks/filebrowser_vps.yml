@@ -1,6 +1,0 @@
----
-
-- name: VPS Filebrowser Config
-  hosts: strato_vps
-  roles:
-    - filebrowser

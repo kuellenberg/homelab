@@ -1,0 +1,50 @@
+deploy_images:
+  authelia:
+    image: "authelia/authelia"
+    tag: "4.39.15"
+    policy: pinned
+
+  gitea:
+    image: "gitea/gitea"
+    tag: "1.25-rootless"
+    policy: pinned
+
+  grafana:
+    image: "grafana/grafana"
+    tag: "12.3.1"
+    policy: pinned
+
+  immich:
+    image: "ghcr.io/immich-app/immich-server"
+    tag: "v2.4.1"
+    policy: pinned
+
+  paperless:
+    image: "ghcr.io/paperless-ngx/paperless-ngx"
+    tag: "2.20.3"
+    policy: pinned
+
+  unifi:
+    image: "lscr.io/linuxserver/unifi-network-application"
+    tag: "10.0.162"
+    policy: pinned
+
+  vaultwarden:
+    image: "vaultwarden/server"
+    tag: "1.35.1"
+    policy: pinned
+
+  wikijs:
+    image: "requarks/wiki"
+    tag: "2.5.309"
+    policy: pinned
+
+  filebrowser:
+    image: "filebrowser/filebrowser"
+    tag: "v2.53.1"
+    policy: pinned
+
+  traefik:
+    image: "traefik"
+    tag: "v3.6.6"
+    policy: pinned

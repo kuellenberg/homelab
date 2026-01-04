@@ -1,9 +1,0 @@
----
-- name: Internal Traefik and CA
-  hosts: homelab
-  gather_facts: true
-  roles:
-    - role: traefik_internal
-      tags: ['traefik_internal']
-    - role: ca_internal
-      tags: ['ca_internal']

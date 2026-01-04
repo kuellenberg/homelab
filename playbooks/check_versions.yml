@@ -1,0 +1,99 @@
+- name: Check deployed container image digests (no pull)
+  hosts: all
+  gather_facts: false
+  become: true
+
+  vars_files:
+    - group_vars/all/deploy_images.yml
+
+  tasks:
+    - name: Ensure required tools exist
+      ansible.builtin.command: "{{ item }} --version"
+      register: tool_check
+      changed_when: false
+      failed_when: tool_check.rc != 0
+      loop:
+        - docker
+        - skopeo
+
+    - name: Build image refs
+      ansible.builtin.set_fact:
+        image_refs: "{{ (image_refs | default([])) + [ {'name': item.key, 'ref': item.value.image ~ ':' ~ item.value.tag } ] }}"
+      loop: "{{ deploy_images | dict2items }}"
+      loop_control:
+        label: "{{ item.key }}"
+
+    - name: Local digest (if image exists locally)
+      ansible.builtin.command: >
+        docker image inspect {{ item.ref }}
+        --format '{{"{{"}}index .RepoDigests 0{{"}}"}}'
+      register: local_inspect
+      loop: "{{ image_refs }}"
+      loop_control:
+        label: "{{ item.name }}"
+      changed_when: false
+      failed_when: false
+
+    - name: Remote digest (skopeo, no pull)
+      ansible.builtin.command: >
+        skopeo inspect docker://{{ item.ref }}
+        --format '{{"{{"}}.Digest{{"}}"}}'
+      register: remote_inspect
+      loop: "{{ image_refs }}"
+      loop_control:
+        label: "{{ item.name }}"
+      changed_when: false
+      failed_when: false
+
+    - name: Build report
+      ansible.builtin.set_fact:
+        update_report: "{{ (update_report | default([])) + [ report_item ] }}"
+      vars:
+        local_repo_digest: "{{ (local_inspect.results[idx].stdout | default('')) }}"
+        local_digest: "{{ (local_repo_digest.split('@') | length > 1) | ternary(local_repo_digest.split('@')[1], '') }}"
+        remote_digest: "{{ (remote_inspect.results[idx].stdout | default('')) }}"
+        local_status: >-
+          {{
+            'missing' if (local_digest | length == 0)
+            else 'ok'
+          }}
+        remote_status: >-
+          {{
+            'error' if (remote_digest | length == 0)
+            else 'ok'
+          }}
+        update_available: >-
+          {{
+            (local_digest | length > 0) and
+            (remote_digest | length > 0) and
+            (local_digest != remote_digest)
+          }}
+        report_item:
+          name: "{{ image_refs[idx].name }}"
+          image: "{{ image_refs[idx].ref }}"
+          local: "{{ local_digest if (local_digest|length > 0) else '(not present locally)' }}"
+          remote: "{{ remote_digest if (remote_digest|length > 0) else '(remote unavailable)' }}"
+          status: >-
+            {{
+              'UPDATE verfügbar' if update_available else
+              'ok' if (local_status == 'ok' and remote_status == 'ok') else
+              'local missing' if local_status == 'missing' else
+              'remote error'
+            }}
+      loop: "{{ range(0, image_refs | length) | list }}"
+      loop_control:
+        loop_var: idx
+        label: "{{ image_refs[idx].name }}"
+
+    - name: Print report (one line per image)
+      ansible.builtin.debug:
+        msg: "{{ '%-14s %-65s %s' | format(item.name, item.image, item.status) }}"
+      loop: "{{ update_report }}"
+      loop_control:
+        label: "{{ item.name }}"
+
+
+    - name: Fail if updates available (optional; comment out if you don't want non-zero)
+      ansible.builtin.fail:
+        msg: "Updates verfügbar für: {{ update_report | selectattr('status','equalto','UPDATE verfügbar') | map(attribute='name') | list | join(', ') }}"
+      when: update_report | selectattr('status','equalto','UPDATE verfügbar') | list | length > 0

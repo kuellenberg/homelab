@@ -1,6 +1,6 @@
 services:
   authelia:
-    image: authelia/authelia:{{ deploy_versions.authelia | default('latest') }}
+    image: "{{ deploy_images.authelia.image}}:{{ deploy_images.authelia.tag | default('latest') }}"
     user: {{ authelia.uid }}:{{ authelia.gid }}
     restart: unless-stopped
     volumes:

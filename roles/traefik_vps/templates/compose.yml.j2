@@ -1,6 +1,6 @@
 services:
   traefik:
-    image: "{{ traefik_vps.image }}"
+    image: "{{ deploy_images.traefik.image }}:{{ deploy_images.traefik.tag | default('latest') }}"
     container_name: traefik_vps
     command:
       - "--configFile=/etc/traefik/traefik.yml"

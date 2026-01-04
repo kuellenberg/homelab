@@ -1,7 +1,7 @@
 services:
   gitea:
     container_name: gitea
-    image: "docker.gitea.com/gitea:{{ deploy_versions.gitea | default('latest-rootless') }}"
+    image: "{{ deploy_images.gitea.image }}:{{ deploy_images.gitea.tag | default('latest-rootless') }}"
     restart: always
     user: "{{ gitea.uid }}:{{ gitea.gid }}"
     volumes:
