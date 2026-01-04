@@ -8,8 +8,8 @@
     mode: "0755"
   loop:
     - "{{ immich.root }}/"
-    # - "{{ immich.root }}/{{ immich.upload_location }}"
-    # - "{{ immich.root }}/{{ immich.db_data_location }}"
+    - "{{ immich.root }}/{{ immich.upload_location }}"
+    - "{{ immich.root }}/{{ immich.db_data_location }}"
 
 - name: Render immich compose
   ansible.builtin.template:
