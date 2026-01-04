@@ -17,16 +17,16 @@
     dest: "{{ traefik_internal_.root }}/traefik.yml"
     mode: "0644"
 
-- name: Deploy internal Immich config
+- name: Deploy internal service configs
   ansible.builtin.template:
     src: service.yml.j2
     dest: "{{ traefik_internal_.root }}/dynamic/{{ svc.name }}.yml"
     mode: "0644"
   loop: >-
-    {{ 
-      internal_services 
+    {{
+      internal_services
       | selectattr('traefik.internal.enabled', 'defined')
-      | selectattr('traefik.internal.enabled') 
+      | selectattr('traefik.internal.enabled')
       | list
     }}
   loop_control:

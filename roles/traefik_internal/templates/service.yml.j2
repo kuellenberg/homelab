@@ -4,6 +4,10 @@ tls:
       keyFile: "/etc/traefik/certs/{{ svc.name }}/{{ svc.domain }}.key"
 
 http:
+  serversTransports:
+    default-insecure:
+      insecureSkipVerify: true
+
   routers:
     {{ svc.name }}-https:
       rule: "Host(`{{ svc.domain }}`)"
@@ -12,7 +16,7 @@ http:
       service: {{ svc.name }}-svc
       tls: {}  
 
-    immich-http:
+    {{ svc.name }}-http:
       rule: "Host(`{{ svc.domain }}`)"
       entryPoints:
         - http
@@ -29,5 +33,8 @@ http:
   services:
     {{ svc.name }}-svc:
       loadBalancer:
+        {% if svc.traefik.internal.insecure_skip_verify | default(false) -%}
+        serversTransport: default-insecure
+        {% endif -%}
         servers:
           - url: "{{ svc.traefik.internal.backend }}"

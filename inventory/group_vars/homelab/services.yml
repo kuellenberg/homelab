@@ -15,7 +15,7 @@ internal_services:
     traefik:
       internal:
         enabled: true
-        backend: "http://gitea:3333"
+        backend: "http://gitea:3000"
 
   - name: paperless
     domain: paperless.ondre.de
@@ -41,5 +41,6 @@ internal_services:
       enabled: true
     traefik:
       internal:
+        insecure_skip_verify: true
         enabled: true
-        backend: "http://unifi-network-application:8443"
+        backend: "https://unifi-network-application:8443"
