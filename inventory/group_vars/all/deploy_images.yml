@@ -16,12 +16,12 @@ deploy_images:
 
   immich:
     image: "ghcr.io/immich-app/immich-server"
-    tag: "v2.4.1"
+    tag: "v2.5.0"
     policy: pinned
 
   paperless:
     image: "ghcr.io/paperless-ngx/paperless-ngx"
-    tag: "2.20.3"
+    tag: "2.20.5"
     policy: pinned
 
   unifi:
@@ -31,20 +31,20 @@ deploy_images:
 
   vaultwarden:
     image: "vaultwarden/server"
-    tag: "1.35.1"
+    tag: "1.35.2"
     policy: pinned
 
   wikijs:
     image: "requarks/wiki"
-    tag: "2.5.309"
+    tag: "2.5.311"
     policy: pinned
 
   filebrowser:
     image: "filebrowser/filebrowser"
-    tag: "v2.53.1"
+    tag: "v2.56.0"
     policy: pinned
 
   traefik:
     image: "traefik"
-    tag: "v3.6.6"
+    tag: "v3.6.7"
     policy: pinned
