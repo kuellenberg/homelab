@@ -4,8 +4,15 @@
   hosts: strato_vps
   gather_facts: true
   roles:
-    - common
-    - vps_base
-    - traefik_vps
-    - authelia
-    - filebrowser
+    - role: common
+      tags: ['common']
+    - role: vps_base
+      tags: ['vps_base']
+    - role: traefik_vps
+      tags: ['traefik_vps']
+    - role: authelia
+      tags: ['authelia']
+    - role: filebrowser
+      tags: ['filebrowser']
+    - role: excalidraw
+      tags: ['excalidraw']

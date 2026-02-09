@@ -1,0 +1,8 @@
+excalidraw_:
+  root: /srv/excalidraw
+  domain: excalidraw.{{ domain_base }}
+  uid: 1000
+  gid: 1000
+  internal_port: 80
+  external_port: 5000
+  proxy_network: proxy

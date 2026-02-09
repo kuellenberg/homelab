@@ -1,0 +1,24 @@
+services:
+  excalidraw:
+    image: "{{ deploy_images.excalidraw.image }}:{{ deploy_images.excalidraw.tag }}"
+    container_name: excalidraw
+    environment:
+      - PUID={{ excalidraw_.uid }}
+      - PGID={{ excalidraw_.gid }}
+
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network={{ proxy_network }}"
+      - "traefik.http.routers.excalidraw.rule=Host(`{{ excalidraw_.domain }}`)"
+      - "traefik.http.routers.excalidraw.entrypoints=https"
+      - "traefik.http.routers.excalidraw.tls=true"
+      - "traefik.http.routers.excalidraw.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.excalidraw.service=excalidraw"
+      - "traefik.http.services.excalidraw.loadbalancer.server.port={{ excalidraw_.internal_port }}"
+    networks:
+      - {{ proxy_network }}
+
+networks:
+  {{ proxy_network }}:
+    external: true

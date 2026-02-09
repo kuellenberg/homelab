@@ -1,0 +1,26 @@
+- name: Ensure excalidraw directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ excalidraw_.uid }}"
+    group: "{{ excalidraw_.gid }}"
+    mode: "0755"
+  loop:
+    - "{{ excalidraw_.root }}/"
+    # - "{{ excalidraw_.root }}/data"
+    # - "{{ excalidraw_.root }}/config"
+    # - "{{ excalidraw_.root }}/files"
+
+- name: Deploy excalidraw compose file
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: "{{ excalidraw_.root }}/compose.yml"
+    mode: "0644"
+
+- name: Start excalidraw
+  community.docker.docker_compose_v2:
+    project_src: "{{ excalidraw_.root }}"
+    files:
+      - compose.yml
+    state: present
+    pull: always
