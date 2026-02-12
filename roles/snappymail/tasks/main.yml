@@ -1,0 +1,23 @@
+- name: Ensure snappymail directories exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ snappymail_.uid }}"
+    group: "{{ snappymail_.gid }}"
+    mode: "0755"
+  loop:
+    - "{{ snappymail_.root }}/"
+
+- name: Deploy snappymail compose file
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: "{{ snappymail_.root }}/compose.yml"
+    mode: "0644"
+
+- name: Start snappymail
+  community.docker.docker_compose_v2:
+    project_src: "{{ snappymail_.root }}"
+    files:
+      - compose.yml
+    state: present
+    pull: always
