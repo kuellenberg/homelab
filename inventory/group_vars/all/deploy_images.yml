@@ -16,27 +16,27 @@ deploy_images:
 
   immich:
     image: "ghcr.io/immich-app/immich-server"
-    tag: "v2.5.0"
+    tag: "v2.5.6"
     policy: pinned
 
   paperless:
     image: "ghcr.io/paperless-ngx/paperless-ngx"
-    tag: "2.20.5"
+    tag: "2.20.6"
     policy: pinned
 
   unifi:
     image: "lscr.io/linuxserver/unifi-network-application"
-    tag: "10.0.162"
+    tag: "10.1.85"
     policy: pinned
 
   vaultwarden:
     image: "vaultwarden/server"
-    tag: "1.35.2"
+    tag: "1.35.3"
     policy: pinned
 
   wikijs:
     image: "requarks/wiki"
-    tag: "2.5.311"
+    tag: "2.5.312"
     policy: pinned
 
   filebrowser:
