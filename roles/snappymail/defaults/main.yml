@@ -1,0 +1,7 @@
+snappymail_:
+  root: /srv/snappymail
+  domain: webmail.{{ domain_base }}
+  uid: 1000
+  gid: 1000
+  internal_port: 8888
+  proxy_network: proxy

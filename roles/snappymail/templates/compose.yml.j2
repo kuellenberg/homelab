@@ -1,0 +1,30 @@
+services:
+  snappymail:
+    image: "{{ deploy_images.snappymail.image }}:{{ deploy_images.snappymail.tag }}"
+    container_name: snappymail
+    environment:
+      - PUID={{ snappymail_.uid }}
+      - PGID={{ snappymail_.gid }}
+    volumes:
+      - snappymail:/var/lib/snappymail
+
+    restart: unless-stopped
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network={{ proxy_network }}"
+      - "traefik.http.routers.snappymail.rule=Host(`{{ snappymail_.domain }}`)"
+      - "traefik.http.routers.snappymail.entrypoints=https"
+      - "traefik.http.routers.snappymail.tls=true"
+      - "traefik.http.routers.snappymail.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.snappymail.service=snappymail"
+      - "traefik.http.services.snappymail.loadbalancer.server.port={{ snappymail_.internal_port }}"
+    networks:
+      - {{ proxy_network }}
+
+networks:
+  {{ proxy_network }}:
+    external: true
+
+volumes:
+  snappymail:
+    driver: local

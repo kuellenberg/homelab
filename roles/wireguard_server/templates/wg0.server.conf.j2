@@ -3,8 +3,17 @@ Address = {{ wireguard_address }}
 ListenPort = {{ wireguard_port }}
 PrivateKey = {{ wireguard_private_key }}
 
-# PostUp =
-# PostDown =
+#PostUp = \
+#  iptables -A FORWARD -i eth0 -o wg0 -p tcp --dport 2222 -j ACCEPT; \
+#  iptables -A FORWARD -i wg0 -o eth0 -p tcp --sport 2222 -j ACCEPT; \
+#  iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 2222 -j DNAT --to-destination 10.42.0.2:2222; \
+#  iptables -t nat -A POSTROUTING -o wg0 -p tcp --dport 2222 -j MASQUERADE
+#
+#PostDown = \
+#  iptables -D FORWARD -i eth0 -o wg0 -p tcp --dport 2222 -j ACCEPT; \
+#  iptables -D FORWARD -i wg0 -o eth0 -p tcp --sport 2222 -j ACCEPT; \
+#  iptables -t nat -D PREROUTING -i eth0 -p tcp --dport 2222 -j DNAT --to-destination 10.42.0.2:2222; \
+#  iptables -t nat -D POSTROUTING -o wg0 -p tcp --dport 2222 -j MASQUERADE
 
 {% for host in groups['homelab'] | sort %}
 [Peer]

@@ -52,3 +52,7 @@ deploy_images:
   excalidraw:
     image: "excalidraw/excalidraw"
     tag: "latest"
+
+  snappymail:
+    image: "djmaze/snappymail"
+    tag: "latest"
