@@ -1,0 +1,24 @@
+- name: Ensure faintphotons dir exsists
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ faintphotons_.uid }}"
+    group: "{{ faintphotons_.gid }}"
+    mode: "0755"
+  loop:
+    - "{{ faintphotons_.root }}/"
+    - "{{ faintphotons_.root }}/dist"
+
+- name: Deploy faintphotons compose file
+  ansible.builtin.template:
+    src: compose.yml.j2
+    dest: "{{ faintphotons_.root }}/compose.yml"
+    mode: "0644"
+
+- name: Start faintphotons
+  community.docker.docker_compose_v2:
+    project_src: "{{ faintphotons_.root }}"
+    files:
+      - compose.yml
+    state: present
+    pull: always

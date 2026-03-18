@@ -1,0 +1,8 @@
+faintphotons_:
+  root: /srv/faintphotons
+  domain: faintphotons.com
+  uid: 1000
+  gid: 1000
+  internal_port: 80
+  external_port: 80
+  proxy_network: proxy
