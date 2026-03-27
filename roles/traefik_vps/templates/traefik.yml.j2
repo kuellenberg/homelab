@@ -1,6 +1,11 @@
 log:
   level: "{{ traefik_vps.log_level | default('INFO') }}"
 
+accessLog:
+  filePath: /logs/access.log
+  bufferingSize: 100
+  format: json
+
 api:
   dashboard: true
   debug: false

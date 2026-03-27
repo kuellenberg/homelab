@@ -46,7 +46,7 @@ deploy_images:
 
   traefik:
     image: "traefik"
-    tag: "v3.6.7"
+    tag: "v3.6.12"
     policy: pinned
 
   excalidraw:
