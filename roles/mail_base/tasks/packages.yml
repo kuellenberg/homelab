@@ -1,0 +1,7 @@
+---
+
+- name: Install mail base packages
+  ansible.builtin.apt:
+    name: "{{ mail_base_packages }}"
+    state: present
+    update_cache: true

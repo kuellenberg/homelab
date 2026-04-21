@@ -1,0 +1,57 @@
+--- 
+
+- name: Set swap size in bytes
+  ansible.builtin.set_fact:
+    mail_base_swap_size_bytes: "{{ mail_base_swap_size_mb | int * 1024 * 1024 }}"
+
+- name: Check if swap file exists
+  ansible.builtin.stat:
+    path: "{{ mail_base_swap_file }}"
+  register: mail_base_swapfile_stat
+
+- name: Create swap file
+  ansible.builtin.command:
+    cmd: "fallocate -l {{ mail_base_swap_size_bytes }} {{ mail_base_swap_file }}"
+  when: not mail_base_swapfile_stat.stat.exists
+  changed_when: true
+
+- name: Set swap file permissions
+  ansible.builtin.file:
+    path: "{{ mail_base_swap_file }}"
+    owner: root
+    group: root
+    mode: "0600"
+    state: file
+
+- name: Check swap signature
+  ansible.builtin.command:
+    cmd: "blkid -o value -s TYPE {{ mail_base_swap_file }}"
+  register: mail_base_swapfile_blkid
+  failed_when: false
+  changed_when: false
+
+- name: Initialize swap area
+  ansible.builtin.command:
+    cmd: "mkswap {{ mail_base_swap_file }}"
+  when: mail_base_swapfile_blkid.stdout != "swap"
+  changed_when: true
+
+- name: Gather active swaps
+  ansible.builtin.command:
+    cmd: "swapon --show=NAME --noheadings"
+  register: mail_base_swapon_show
+  changed_when: false
+
+- name: Enable swap file
+  ansible.builtin.command:
+    cmd: "swapon {{ mail_base_swap_file }}"
+  when: mail_base_swap_file not in mail_base_swapon_show.stdout_lines
+  changed_when: true
+
+- name: Persist swap in fstab
+  ansible.posix.mount:
+    name: none
+    src: "{{ mail_base_swap_file }}"
+    fstype: swap
+    opts: sw
+    state: present

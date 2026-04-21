@@ -1,0 +1,7 @@
+---
+
+- name: Install postfix
+  ansible.builtin.apt:
+    name: "{{ postfix_package_name }}"
+    state: present
+    update_cache: true

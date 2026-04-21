@@ -1,0 +1,9 @@
+---
+
+- name: VPS Mail Server
+  hosts: strato_vps
+  gather_facts: true
+  become: true
+  roles:
+    - role: mail_base
+    - role: postfix

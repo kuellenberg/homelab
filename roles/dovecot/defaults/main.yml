@@ -1,0 +1,15 @@
+---
+
+dovecot_packages:
+  - dovecot-core
+  - dovecot-imapd
+
+dovecot_mail_location: "maildir:~/Maildir"
+
+dovecot_ssl_cert: "/etc/letsencrypt/live/{{ mail_hostname }}/fullchain.pem"
+dovecot_ssl_key: "/etc/letsencrypt/live/{{ mail_hostname }}/privkey.pem"
+
+dovecot_auth_socket_path: "/var/spool/postfix/private/auth"
+dovecot_auth_socket_mode: "0660"
+dovecot_auth_socket_user: postfix
+dovecot_auth_socket_group: postfix

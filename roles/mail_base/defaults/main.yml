@@ -1,0 +1,11 @@
+---
+
+mail_base_packages:
+  - ca-certificates
+  - curl
+  - dnsutils
+  - openssl
+
+mail_base_swap_enabled: true
+mail_base_swap_file: /swapfile
+mail_base_swap_size_mb: 1024

@@ -1,0 +1,11 @@
+---
+
+- name: Restart dovecot
+  ansible.builtin.service:
+    name: dovecot
+    state: restarted
+
+- name: Reload dovecot
+  ansible.builtin.service:
+    name: dovecot
+    state: reloaded

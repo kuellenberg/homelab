@@ -1,0 +1,9 @@
+---
+
+- name: Install postfix package
+  ansible.builtin.import_tasks: packages.yml
+  tags: [postfix, packages]
+
+- name: Configure postfix
+  ansible.builtin.import_tasks: config.yml
+  tags: [postfix, config]

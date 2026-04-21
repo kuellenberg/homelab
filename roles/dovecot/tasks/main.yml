@@ -1,0 +1,9 @@
+---
+
+- name: Install dovecot packages
+  ansible.builtin.import_tasks: packages.yml
+  tags: dovecot
+
+- name: Configure dovecot
+  ansible.builtin.import_tasks: config.yml
+  tags: dovecot

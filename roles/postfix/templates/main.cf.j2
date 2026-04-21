@@ -1,0 +1,40 @@
+smtpd_banner = $myhostname ESMTP $mail_name (Debian/GNU)
+biff = no
+append_dot_mydomain = no
+readme_directory = no
+compatibility_level = 3.6
+
+# TLS parameters
+smtpd_tls_cert_file = {{ postfix_tls_cert_file }}
+smtpd_tls_key_file = {{ postfix_tls_key_file }}
+smtpd_tls_security_level = may
+
+smtp_tls_CApath = /etc/ssl/certs
+smtp_tls_security_level = may
+smtp_tls_session_cache_database = btree:${data_directory}/smtp_scache
+
+smtpd_relay_restrictions = permit_mynetworks permit_sasl_authenticated defer_unauth_destination
+
+myhostname = {{ postfix_myhostname }}
+alias_maps = hash:/etc/aliases
+alias_database = hash:/etc/aliases
+myorigin = /etc/mailname
+mydestination = {{ postfix_mydestination | join(', ') }}
+relayhost =
+mynetworks = {{ postfix_mynetworks | join(' ') }}
+
+mailbox_size_limit = 0
+recipient_delimiter = +
+inet_interfaces = {{ postfix_inet_interfaces }}
+inet_protocols = {{ postfix_inet_protocols }}
+home_mailbox = {{ postfix_home_mailbox }}
+
+milter_default_action = {{ postfix_milter_default_action }}
+milter_protocol = {{ postfix_milter_protocol }}
+smtpd_milters = {{ postfix_smtpd_milters | join(',') }}
+non_smtpd_milters = {{ postfix_non_smtpd_milters | join(',') }}
+
+virtual_alias_maps = {{ postfix_virtual_alias_maps }}
+{% if postfix_virtual_alias_domains | length > 0 %}
+virtual_alias_domains = {{ postfix_virtual_alias_domains | join(', ') }}
+{% endif %}

@@ -1,0 +1,28 @@
+- name: Ensure /etc/mailname exists
+  ansible.builtin.copy:
+    dest: /etc/mailname
+    content: "{{ mail_primary_domain }}\n"
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart postfix
+
+- name: Deploy postfix main.cf
+  ansible.builtin.template:
+    src: main.cf.j2
+    dest: /etc/postfix/main.cf
+    owner: root
+    group: root
+    mode: "0644"
+    validate: /usr/sbin/postfix check %s
+  notify: Restart postfix
+
+- name: Deploy postfix master.cf
+  ansible.builtin.template:
+    src: master.cf.j2
+    dest: /etc/postfix/master.cf
+    owner: root
+    group: root
+    mode: '0644'
+    validate: /usr/sbin/postfix check %s
+  notify: Restart postfix

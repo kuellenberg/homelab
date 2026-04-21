@@ -1,0 +1,33 @@
+mail_hostname: mail.ondre.de
+mail_primary_domain: ondre.de
+
+mail_domains:
+  - ondre.de
+  - faintphotons.de
+
+mail_users:
+  - name: ondre
+    shell: /bin/bash
+  - name: hasi
+    shell: /usr/sbin/nologin
+
+mail_aliases_local:
+  - aliases: ["info", "moobert", "zemightyone"]
+    target: ondre
+  - aliases: ["mohre"]
+    target: hasi
+
+mail_virtual_alias_domains:
+  - faintphotons.de
+
+mail_virtual_aliases:
+  - address: info@faintphotons.de
+    target: ondre
+  - address: kontakt@faintphotons.de
+    target: ondre
+
+mail_dkim_domains:
+  - domain: ondre.de
+    selector: mail2026
+  - domain: faintphotons.de
+    selector: mail2026

@@ -1,0 +1,37 @@
+---
+
+postfix_package_name: postfix
+
+postfix_myhostname: "{{ mail_hostname }}"
+postfix_mydomain: "{{ mail_primary_domain }}"
+
+postfix_tls_cert_file: "/etc/letsencrypt/live/{{ mail_hostname }}/fullchain.pem"
+postfix_tls_key_file: "/etc/letsencrypt/live/{{ mail_hostname }}/privkey.pem"
+
+postfix_mydestination:
+  - "$myhostname"
+  - "{{ mail_primary_domain }}"
+  - "localhost.localdomain"
+  - "localhost"
+
+postfix_mynetworks:
+  - "127.0.0.0/8"
+  - "[::ffff:127.0.0.0]/104"
+  - "[::1]/128"
+
+postfix_inet_interfaces: all
+postfix_inet_protocols: all
+postfix_home_mailbox: "Maildir/"
+
+postfix_milter_default_action: accept
+postfix_milter_protocol: 6
+postfix_smtpd_milters:
+  - "unix:/opendkim/opendkim.sock"
+  - "inet:127.0.0.1:11332"
+postfix_non_smtpd_milters:
+  - "unix:/opendkim/opendkim.sock"
+  - "inet:127.0.0.1:11332"
+
+postfix_virtual_alias_maps: "hash:/etc/postfix/virtual"
+postfix_virtual_alias_domains:
+  - faintphotons.de

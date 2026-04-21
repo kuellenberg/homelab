@@ -1,0 +1,10 @@
+---
+
+- name: Install base packages
+  ansible.builtin.import_tasks: packages.yml
+  tags: [mail_base, packages]
+
+- name: Configure swap
+  ansible.builtin.import_tasks: swap.yml
+  when: mail_base_swap_enabled | bool
+  tags: [mail_base, swap]

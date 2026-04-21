@@ -1,0 +1,7 @@
+---
+
+- name: Install dovecot packages
+  ansible.builtin.apt:
+    name: "{{ dovecot_packages }}"
+    state: present
+    update_cache: true

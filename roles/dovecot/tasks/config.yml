@@ -1,0 +1,28 @@
+---
+
+- name: Deploy dovecot 10-mail.conf
+  ansible.builtin.template:
+    src: 10-mail.conf.j2
+    dest: /etc/dovecot/conf.d/10-mail.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart dovecot
+
+- name: Deploy dovecot 10-master.conf
+  ansible.builtin.template:
+    src: 10-master.conf.j2
+    dest: /etc/dovecot/conf.d/10-master.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart dovecot
+
+- name: Deploy dovecot 10-ssl.conf
+  ansible.builtin.template:
+    src: 10-ssl.conf.j2
+    dest: /etc/dovecot/conf.d/10-ssl.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: Restart dovecot
