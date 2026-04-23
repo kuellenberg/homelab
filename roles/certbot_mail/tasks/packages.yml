@@ -1,0 +1,7 @@
+---
+
+- name: Install certbot
+  ansible.builtin.apt:
+    name: "{{ certbot_mail_package_name }}"
+    state: present
+    update_cache: true

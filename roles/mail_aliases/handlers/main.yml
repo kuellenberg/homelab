@@ -1,0 +1,13 @@
+---
+- name: rebuild aliases
+  ansible.builtin.command:
+    cmd: newaliases
+
+- name: rebuild postfix virtual map
+  ansible.builtin.command:
+    cmd: postmap {{ mail_virtual_file }}
+
+- name: reload postfix
+  ansible.builtin.service:
+    name: postfix
+    state: reloaded

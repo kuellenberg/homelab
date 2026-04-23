@@ -1,0 +1,22 @@
+---
+
+- name: Install certbot package
+  ansible.builtin.import_tasks: packages.yml
+  tags: certbot_mail
+
+- name: Deploy certbot mail hooks
+  ansible.builtin.import_tasks: hooks.yml
+  when: certbot_mail_enable_hooks | bool
+  tags: certbot_mail
+
+- name: Request mail certificate
+  ansible.builtin.import_tasks: certificate.yml
+  when: certbot_mail_run_initial_request | bool
+  tags: certbot_mail
+
+- name: Test certbot renewal dry-run
+  ansible.builtin.command:
+    cmd: certbot renew --dry-run
+  when: certbot_mail_test_renewal_dry_run | bool
+  changed_when: false
+  tags: certbot_mail

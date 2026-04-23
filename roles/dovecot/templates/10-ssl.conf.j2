@@ -1,0 +1,6 @@
+ssl = yes
+ssl_cert = <{{ dovecot_ssl_cert }}
+ssl_key = <{{ dovecot_ssl_key }}
+
+ssl_client_ca_dir = /etc/ssl/certs
+ssl_dh = </usr/share/dovecot/dh.pem

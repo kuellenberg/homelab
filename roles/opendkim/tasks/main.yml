@@ -1,0 +1,12 @@
+---
+- name: Install OpenDKIM packages
+  ansible.builtin.import_tasks: packages.yml
+  tags: opendkim
+
+- name: Configure OpenDKIM
+  ansible.builtin.import_tasks: config.yml
+  tags: opendkim
+
+- name: Manage DKIM keys
+  ansible.builtin.import_tasks: keys.yml
+  tags: opendkim

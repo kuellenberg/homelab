@@ -1,0 +1,13 @@
+Syslog                  yes
+SyslogSuccess           yes
+Canonicalization        relaxed/simple
+OversignHeaders         From
+UserID                  {{ opendkim_user }}:{{ opendkim_group }}
+UMask                   007
+Socket                  {{ opendkim_socket }}
+PidFile                 /run/opendkim/opendkim.pid
+TrustAnchorFile         /usr/share/dns/root.key
+KeyTable                {{ opendkim_key_table_path }}
+SigningTable            refile:{{ opendkim_signing_table_path }}
+InternalHosts           {{ opendkim_trusted_hosts_path }}
+ExternalIgnoreList      {{ opendkim_trusted_hosts_path }}

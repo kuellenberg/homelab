@@ -1,5 +1,4 @@
 ---
-
 postfix_package_name: postfix
 
 postfix_myhostname: "{{ mail_hostname }}"
@@ -34,4 +33,3 @@ postfix_non_smtpd_milters:
 
 postfix_virtual_alias_maps: "hash:/etc/postfix/virtual"
 postfix_virtual_alias_domains:
-  - faintphotons.de

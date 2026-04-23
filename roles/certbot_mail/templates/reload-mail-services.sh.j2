@@ -1,0 +1,7 @@
+#!/bin/sh
+{% if certbot_mail_deploy_reload_postfix %}
+postfix reload || systemctl restart postfix
+{% endif %}
+{% if certbot_mail_deploy_reload_dovecot %}
+systemctl reload dovecot || systemctl restart dovecot
+{% endif %}

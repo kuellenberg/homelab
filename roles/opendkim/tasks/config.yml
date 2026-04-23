@@ -1,0 +1,45 @@
+---
+- name: Ensure OpenDKIM socket directory exists
+  ansible.builtin.file:
+    path: "{{ opendkim_socket_dir }}"
+    state: directory
+    owner: "{{ opendkim_user }}"
+    group: "{{ opendkim_group }}"
+    mode: "0750"
+  notify: restart opendkim
+
+- name: Deploy opendkim.conf
+  ansible.builtin.template:
+    src: opendkim.conf.j2
+    dest: /etc/opendkim.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart opendkim
+
+- name: Deploy OpenDKIM key.table
+  ansible.builtin.template:
+    src: key.table.j2
+    dest: "{{ opendkim_key_table_path }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart opendkim
+
+- name: Deploy OpenDKIM signing.table
+  ansible.builtin.template:
+    src: signing.table.j2
+    dest: "{{ opendkim_signing_table_path }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart opendkim
+
+- name: Deploy OpenDKIM trusted.hosts
+  ansible.builtin.template:
+    src: trusted.hosts.j2
+    dest: "{{ opendkim_trusted_hosts_path }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart opendkim

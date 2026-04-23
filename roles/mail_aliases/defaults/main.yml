@@ -1,0 +1,7 @@
+---
+
+mail_aliases_local: []
+mail_aliases_virtual: []
+
+mail_aliases_file: /etc/aliases
+mail_virtual_file: /etc/postfix/virtual

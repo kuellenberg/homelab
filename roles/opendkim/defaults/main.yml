@@ -1,0 +1,23 @@
+---
+opendkim_packages:
+  - opendkim
+  - opendkim-tools
+
+opendkim_user: opendkim
+opendkim_group: postfix
+
+opendkim_socket_dir: /var/spool/postfix/opendkim
+opendkim_socket: "local:/var/spool/postfix/opendkim/opendkim.sock"
+
+opendkim_key_table_path: /etc/opendkim/key.table
+opendkim_signing_table_path: /etc/opendkim/signing.table
+opendkim_trusted_hosts_path: /etc/opendkim/trusted.hosts
+
+opendkim_trusted_hosts:
+  - 127.0.0.1
+  - localhost
+  - ::1
+  - "{{ mail_hostname }}"
+  - "{{ mail_primary_domain }}"
+
+opendkim_domains: []

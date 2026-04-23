@@ -1,0 +1,11 @@
+---
+- name: Deploy /etc/postfix/virtual
+  ansible.builtin.template:
+    src: virtual.j2
+    dest: "{{ mail_virtual_file }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - rebuild postfix virtual map
+    - reload postfix

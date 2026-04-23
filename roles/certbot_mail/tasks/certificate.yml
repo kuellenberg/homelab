@@ -1,0 +1,17 @@
+---
+
+- name: Check if mail certificate already exists
+  ansible.builtin.stat:
+    path: "{{ certbot_mail_cert_path }}"
+  register: certbot_mail_cert_stat
+
+- name: Request initial certificate for mail hostname
+  ansible.builtin.command:
+    cmd: >-
+      certbot certonly --standalone
+      -d {{ certbot_mail_domain }}
+      {% if certbot_mail_email | length > 0 %}--email {{ certbot_mail_email }}{% else %}--register-unsafely-without-email{% endif %}
+      {% if certbot_mail_agree_tos %}--agree-tos{% endif %}
+      {% if certbot_mail_staging %}--staging{% endif %}
+      --non-interactive
+  when: not certbot_mail_cert_stat.stat.exists

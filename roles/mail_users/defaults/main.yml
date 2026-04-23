@@ -1,0 +1,5 @@
+---
+mail_users_manage_passwords: false
+
+mail_users:
+  []

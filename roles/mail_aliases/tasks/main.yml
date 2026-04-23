@@ -1,0 +1,8 @@
+---
+- name: Manage local aliases
+  ansible.builtin.import_tasks: local_aliases.yml
+  tags: mail_aliases
+
+- name: Manage virtual aliases
+  ansible.builtin.import_tasks: virtual_aliases.yml
+  tags: mail_aliases

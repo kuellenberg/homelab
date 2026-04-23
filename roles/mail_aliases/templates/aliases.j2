@@ -1,0 +1,8 @@
+# Managed by Ansible
+
+postmaster: root
+{% for item in mail_aliases_local %}
+{% for alias in item.aliases %}
+{{ alias }}: {{ item.targets | join(', ') }}
+{% endfor %}
+{% endfor %}

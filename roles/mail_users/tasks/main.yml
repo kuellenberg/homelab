@@ -1,0 +1,10 @@
+---
+
+- name: Manage mail users
+  ansible.builtin.import_tasks: users.yml
+  tags: mail_users
+
+- name: Manage mail user passwords
+  ansible.builtin.import_tasks: passwords.yml
+  when: mail_users_manage_passwords | bool
+  tags: mail_users

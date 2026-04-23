@@ -1,0 +1,9 @@
+---
+
+- name: Ensure mail users exist
+  ansible.builtin.user:
+    name: "{{ item.name }}"
+    shell: "{{ item.shell | default('/usr/sbin/nologin') }}"
+    create_home: "{{ item.create_home | default(true) }}"
+    state: present
+  loop: "{{ mail_users }}"

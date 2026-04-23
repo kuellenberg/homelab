@@ -1,0 +1,32 @@
+---
+- name: Ensure DKIM key directories exist
+  ansible.builtin.file:
+    path: "/etc/opendkim/keys/{{ item.domain }}"
+    state: directory
+    owner: "{{ opendkim_user }}"
+    group: "{{ opendkim_user }}"
+    mode: "0750"
+  loop: "{{ opendkim_domains }}"
+
+- name: Check if DKIM private keys already exist
+  ansible.builtin.stat:
+    path: "/etc/opendkim/keys/{{ item.domain }}/{{ item.selector }}.private"
+  loop: "{{ opendkim_domains }}"
+  register: opendkim_key_stats
+
+- name: Generate DKIM keys if missing
+  ansible.builtin.command:
+    cmd: "opendkim-genkey -b 2048 -s {{ item.item.selector }} -d {{ item.item.domain }}"
+    chdir: "/etc/opendkim/keys/{{ item.item.domain }}"
+  loop: "{{ opendkim_key_stats.results }}"
+  when: not item.stat.exists
+  notify: restart opendkim
+
+- name: Ensure DKIM private key ownership
+  ansible.builtin.file:
+    path: "/etc/opendkim/keys/{{ item.domain }}/{{ item.selector }}.private"
+    owner: "{{ opendkim_user }}"
+    group: "{{ opendkim_user }}"
+    mode: "0600"
+  loop: "{{ opendkim_domains }}"
+  notify: restart opendkim

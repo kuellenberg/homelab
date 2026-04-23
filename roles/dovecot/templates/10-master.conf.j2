@@ -1,0 +1,7 @@
+service auth {
+  unix_listener {{ dovecot_auth_socket_path }} {
+    mode = {{ dovecot_auth_socket_mode }}
+    user = {{ dovecot_auth_socket_user }}
+    group = {{ dovecot_auth_socket_group }}
+  }
+}

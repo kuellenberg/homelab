@@ -1,0 +1,3 @@
+{% for item in opendkim_domains %}
+{{ item.selector }}._domainkey.{{ item.domain }} {{ item.domain }}:{{ item.selector }}:/etc/opendkim/keys/{{ item.domain }}/{{ item.selector }}.private
+{% endfor %}

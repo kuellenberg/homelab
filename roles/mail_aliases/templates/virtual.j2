@@ -1,0 +1,5 @@
+# Managed by Ansible
+
+{% for item in mail_aliases_virtual %}
+{{ item.address }}    {{ item.target }}
+{% endfor %}

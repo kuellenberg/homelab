@@ -1,0 +1,6 @@
+---
+- name: Install OpenDKIM packages
+  ansible.builtin.apt:
+    name: "{{ opendkim_packages }}"
+    state: present
+    update_cache: true

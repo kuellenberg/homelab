@@ -1,0 +1,18 @@
+certbot_mail_package_name: certbot
+
+certbot_mail_domain: "{{ mail_hostname }}"
+certbot_mail_cert_path: "/etc/letsencrypt/live/{{ certbot_mail_domain }}/fullchain.pem"
+certbot_mail_key_path: "/etc/letsencrypt/live/{{ certbot_mail_domain }}/privkey.pem"
+
+certbot_mail_enable_hooks: true
+certbot_mail_traefik_container_name: traefik_vps
+
+certbot_mail_deploy_reload_postfix: true
+certbot_mail_deploy_reload_dovecot: true
+
+certbot_mail_run_initial_request: false
+certbot_mail_email: ""
+certbot_mail_agree_tos: true
+certbot_mail_staging: false
+
+certbot_mail_test_renewal_dry_run: false

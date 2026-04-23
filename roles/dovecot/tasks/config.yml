@@ -7,7 +7,8 @@
     owner: root
     group: root
     mode: "0644"
-  notify: Restart dovecot
+    validate: "doveconf -c %s"
+  notify: restart dovecot
 
 - name: Deploy dovecot 10-master.conf
   ansible.builtin.template:
@@ -16,7 +17,8 @@
     owner: root
     group: root
     mode: "0644"
-  notify: Restart dovecot
+    validate: "doveconf -c %s"
+  notify: restart dovecot
 
 - name: Deploy dovecot 10-ssl.conf
   ansible.builtin.template:
@@ -25,4 +27,5 @@
     owner: root
     group: root
     mode: "0644"
-  notify: Restart dovecot
+    validate: "doveconf -c %s"
+  notify: restart dovecot

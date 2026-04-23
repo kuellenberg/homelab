@@ -1,0 +1,9 @@
+---
+- name: Deploy /etc/aliases
+  ansible.builtin.template:
+    src: aliases.j2
+    dest: "{{ mail_aliases_file }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify: rebuild aliases

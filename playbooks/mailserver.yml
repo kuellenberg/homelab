@@ -7,3 +7,8 @@
   roles:
     - role: mail_base
     - role: postfix
+    - role: dovecot
+    - role: certbot_mail
+    - role: mail_users
+    - role: mail_aliases
+    - role: opendkim
