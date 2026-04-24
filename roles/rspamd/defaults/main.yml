@@ -1,0 +1,46 @@
+---
+rspamd_packages:
+  - redis-server
+  - rspamd
+
+rspamd_redis_servers: "127.0.0.1:6379"
+
+rspamd_controller_password_hash: ""
+
+rspamd_milter_headers_extended: true
+rspamd_milter_headers_authenticated:
+  - x-spamd-result
+  - x-rspamd-server
+  - x-rspamd-queue-id
+  - authentication-results
+
+rspamd_multimap_enabled: true
+
+rspamd_multimap_pharma_subject_patterns:
+  - '/.*\bpillen\b.*/i'
+  - '/.*\btabletten\b.*/i'
+  - '/.*\brezeptfrei\b.*/i'
+  - '/.*\breze-ptfrei\b.*/i'
+  - '/.*\bre-zeptfrei\b.*/i'
+  - '/.*\brezeptfre-i\b.*/i'
+  - '/.*\bpotenz\b.*/i'
+  - '/.*\bmanneskraft\b.*/i'
+  - '/.*\b5x\b.*\bdurch\b.*/i'
+
+rspamd_multimap_scam_subject_patterns:
+  - '/.*\bwarnung\b.*cloud-speicher.*/i'
+  - '/.*\blagerwarnung\b.*/i'
+  - '/.*\brückerstattung\b.*/i'
+  - '/.*\bbitte bestätigen sie ihre daten\b.*/i'
+  - '/.*\baktualisierung\b.*\bfreigabeumgebung\b.*/i'
+  - '/.*\bdkb\b.*\bhinweis\b.*/i'
+  - '/.*\beasybank\b.*\bdaten\b.*/i'
+
+rspamd_multimap_clickbait_subject_patterns:
+  - '/.*\bbekannt aus tv\b.*/i'
+  - '/.*\bdie höhle der löwen\b.*/i'
+  - '/.*\boffiziell ausverkauft\b.*/i'
+  - '/.*\bnotaufnahme\b.*/i'
+  - '/.*\bneuer trend\b.*/i'
+  - '/.*\bblitzer erkennen\b.*/i'
+  - '/.*\bstrafzettel\b.*/i'

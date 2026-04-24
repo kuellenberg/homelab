@@ -10,19 +10,19 @@ services:
     labels:
       - traefik.enable=true
       - traefik.docker.network={{ proxy_network }}
-      - traefik.http.routers.faintphotons.rule=Host(`faintphotons.com`)
+      - traefik.http.routers.faintphotons.rule=Host(`www.faintphotons.com`)
       - traefik.http.routers.faintphotons.entrypoints=https
       - traefik.http.routers.faintphotons.tls.certresolver=letsencrypt
       - traefik.http.services.faintphotons.loadbalancer.server.port=80
 
         # www + .de Domains abfangen
-      - traefik.http.routers.redirect.rule=Host(`www.faintphotons.com`) || Host(`faintphotons.de`) || Host(`www.faintphotons.de`)
+      - traefik.http.routers.redirect.rule=Host(`faintphotons.com`) || Host(`faintphotons.de`) || Host(`www.faintphotons.de`)
       - traefik.http.routers.redirect.entrypoints=https
       - traefik.http.routers.redirect.tls.certresolver=letsencrypt
 
       # Middleware: redirect auf canonical domain
       - traefik.http.middlewares.redirect-to-main.redirectregex.regex=^https?://(www\.)?faintphotons\.(com|de)(.*)
-      - traefik.http.middlewares.redirect-to-main.redirectregex.replacement=https://faintphotons.com$3
+      - traefik.http.middlewares.redirect-to-main.redirectregex.replacement=https://www.faintphotons.com$3
       - traefik.http.middlewares.redirect-to-main.redirectregex.permanent=true
 
       - traefik.http.routers.redirect.middlewares=redirect-to-main

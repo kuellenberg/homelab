@@ -1,0 +1,36 @@
+---
+- name: Ensure rspamd local.d directory exists
+  ansible.builtin.file:
+    path: /etc/rspamd/local.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Deploy rspamd redis.conf
+  ansible.builtin.template:
+    src: redis.conf.j2
+    dest: /etc/rspamd/local.d/redis.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart rspamd
+
+- name: Deploy rspamd worker-controller.inc
+  ansible.builtin.template:
+    src: worker-controller.inc.j2
+    dest: /etc/rspamd/local.d/worker-controller.inc
+    owner: root
+    group: root
+    mode: "0644"
+  when: rspamd_controller_password_hash | length > 0
+  notify: restart rspamd
+
+- name: Deploy rspamd milter_headers.conf
+  ansible.builtin.template:
+    src: milter_headers.conf.j2
+    dest: /etc/rspamd/local.d/milter_headers.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart rspamd

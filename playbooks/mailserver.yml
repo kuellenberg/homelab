@@ -12,3 +12,4 @@
     - role: mail_users
     - role: mail_aliases
     - role: opendkim
+    - role: rspamd

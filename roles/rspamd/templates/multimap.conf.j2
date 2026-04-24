@@ -1,0 +1,26 @@
+PHARMA_SUBJECT {
+  type = "header";
+  header = "Subject";
+  regexp = true;
+  map = "/etc/rspamd/maps.d/pharma_subject.map";
+  score = 8.0;
+  description = "Likely pharma/potency spam by subject";
+}
+
+SCAM_SUBJECT {
+  type = "header";
+  header = "Subject";
+  regexp = true;
+  map = "/etc/rspamd/maps.d/scam_subject.map";
+  score = 6.0;
+  description = "Likely scam/phishing spam by subject";
+}
+
+CLICKBAIT_SUBJECT {
+  type = "header";
+  header = "Subject";
+  regexp = true;
+  map = "/etc/rspamd/maps.d/clickbait_subject.map";
+  score = 4.0;
+  description = "Likely clickbait marketing spam by subject";
+}

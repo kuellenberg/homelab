@@ -1,0 +1,2 @@
+extended_spam_headers = {{ rspamd_milter_headers_extended | ternary('true', 'false') }};
+authenticated_headers = [{% for h in rspamd_milter_headers_authenticated %}"{{ h }}"{% if not loop.last %}, {% endif %}{% endfor %}];

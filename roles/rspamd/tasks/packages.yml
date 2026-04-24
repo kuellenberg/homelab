@@ -1,0 +1,6 @@
+---
+- name: Install rspamd packages
+  ansible.builtin.apt:
+    name: "{{ rspamd_packages }}"
+    state: present
+    update_cache: true

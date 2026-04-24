@@ -1,0 +1,13 @@
+---
+- name: Install rspamd packages
+  ansible.builtin.import_tasks: packages.yml
+  tags: rspamd
+
+- name: Configure rspamd
+  ansible.builtin.import_tasks: config.yml
+  tags: rspamd
+
+- name: Configure rspamd multimap rules
+  ansible.builtin.import_tasks: multimap.yml
+  when: rspamd_multimap_enabled | bool
+  tags: rspamd

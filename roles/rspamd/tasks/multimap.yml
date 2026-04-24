@@ -1,0 +1,44 @@
+---
+- name: Ensure rspamd maps.d directory exists
+  ansible.builtin.file:
+    path: /etc/rspamd/maps.d
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Deploy rspamd multimap configuration
+  ansible.builtin.template:
+    src: multimap.conf.j2
+    dest: /etc/rspamd/local.d/multimap.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart rspamd
+
+- name: Deploy pharma subject map
+  ansible.builtin.template:
+    src: pharma_subject.map.j2
+    dest: /etc/rspamd/maps.d/pharma_subject.map
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart rspamd
+
+- name: Deploy scam subject map
+  ansible.builtin.template:
+    src: scam_subject.map.j2
+    dest: /etc/rspamd/maps.d/scam_subject.map
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart rspamd
+
+- name: Deploy clickbait subject map
+  ansible.builtin.template:
+    src: clickbait_subject.map.j2
+    dest: /etc/rspamd/maps.d/clickbait_subject.map
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart rspamd

@@ -37,3 +37,5 @@ opendkim_domains:
     selector: mail2026
   - domain: faintphotons.de
     selector: mail2026
+
+rspamd_controller_password_hash: "{{ vault_rspamd_controller_password_hash }}"
