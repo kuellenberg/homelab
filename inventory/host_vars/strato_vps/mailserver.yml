@@ -6,6 +6,7 @@ certbot_mail_email: "ondre@ondre.de"
 mail_domains:
   - ondre.de
   - faintphotons.de
+  - kuellenberg.eu
 
 mail_users:
   - name: ondre
@@ -14,9 +15,12 @@ mail_users:
   - name: hasi
     shell: /usr/sbin/nologin
     create_home: true
+  - name: andre
+    shell: /usr/sbin/nologin
+    create_home: true
 
 mail_aliases_local:
-  - aliases: ["info", "moobert", "zemightyone"]
+  - aliases: ["info", "moobert", "zemightyone","kloetenthaler"]
     targets: ["ondre"]
   - aliases: ["mohre"]
     targets: ["hasi"]
@@ -25,17 +29,28 @@ mail_aliases_local:
 
 postfix_virtual_alias_domains:
   - faintphotons.de
+  - kuellenberg.eu
 
 mail_aliases_virtual:
   - address: "info@faintphotons.de"
     target: "ondre"
   - address: "kontakt@faintphotons.de"
     target: "ondre"
+  - address: "andre@kuellenberg.eu"
+    target: "andre"
+  - address: "info@kuellenberg.eu"
+    target: "andre"
+  - address: "postmaster@kuellenberg.eu"
+    target: "andre"
+  - address: "abuse@kuellenberg.eu"
+    target: "andre"
 
 opendkim_domains:
   - domain: ondre.de
     selector: mail2026
   - domain: faintphotons.de
+    selector: mail2026
+  - domain: kuellenberg.eu
     selector: mail2026
 
 rspamd_controller_password_hash: "{{ vault_rspamd_controller_password_hash }}"
