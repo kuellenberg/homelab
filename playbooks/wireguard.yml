@@ -18,6 +18,8 @@
   vars:
     wg_server_host: "{{ groups['vps'][0] }}"
     wireguard_server_public_key: "{{ hostvars[wg_server_host].wireguard_public_key }}"
+    wireguard_server_public_keys: "{{ hostvars[wg_server_host].wireguard_server_public_keys }}"
+    wireguard_primary_interface: "{{ hostvars[wg_server_host].wireguard_primary_interface | default('wg0') }}"
   tasks:
     - name: Clients | full
       ansible.builtin.include_role:

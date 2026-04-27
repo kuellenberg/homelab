@@ -1,5 +1,4 @@
 ---
-
 - name: Deploy WireGuard config
   ansible.builtin.template:
     src: "{{ wireguard_config_template }}"
@@ -7,8 +6,8 @@
     owner: root
     group: root
     mode: "0600"
-  notify: Restart wireguard
-  no_log: true   # wg conf enthält private key
+  register: wireguard_config_deploy
+  no_log: true
   tags: [wireguard_conf]
 
 - name: Ensure WireGuard service is enabled and started
@@ -16,4 +15,13 @@
     name: "wg-quick@{{ wireguard_interface }}"
     enabled: true
     state: started
+  tags: [wireguard_conf]
+
+- name: Restart WireGuard interface when config changed
+  ansible.builtin.systemd:
+    name: "wg-quick@{{ wireguard_interface }}"
+    state: restarted
+  when:
+    - wireguard_config_deploy.changed
+    - not ansible_check_mode
   tags: [wireguard_conf]

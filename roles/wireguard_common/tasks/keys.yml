@@ -9,45 +9,85 @@
 - name: Check if private key exists
   ansible.builtin.stat:
     path: "/etc/wireguard/{{ wireguard_interface }}.key"
-  register: wg_key_stat
-
-- name: Generate WireGuard private key (only if missing)
-  ansible.builtin.command: wg genkey
-  register: wg_genkey
-  changed_when: true
+  register: wg_priv_stat
   no_log: true
-  when: not wg_key_stat.stat.exists
 
-- name: Write WireGuard private key (only if missing)
+# Normal mode: generate a key only when the remote key file is missing.
+- name: Generate WireGuard private key when missing
+  ansible.builtin.command: wg genkey
+  register: wg_priv_generated
+  changed_when: true
+  when:
+    - not wg_priv_stat.stat.exists
+    - not ansible_check_mode
+  no_log: true
+
+# Normal mode: persist the generated private key.
+- name: Write WireGuard private key when missing
   ansible.builtin.copy:
     dest: "/etc/wireguard/{{ wireguard_interface }}.key"
-    content: "{{ wg_genkey.stdout }}\n"
+    content: "{{ wg_priv_generated.stdout }}\n"
     owner: root
     group: root
     mode: "0600"
+  when:
+    - not wg_priv_stat.stat.exists
+    - not ansible_check_mode
   no_log: true
-  when: not wg_key_stat.stat.exists
 
-# Ab hier: immer aus der Remote-Datei lesen (egal ob neu oder schon vorhanden)
+# Check mode only: generate a temporary key so templates can render.
+# This key is never written to disk.
+- name: Generate temporary WireGuard private key for check mode
+  ansible.builtin.command: wg genkey
+  register: wg_priv_check
+  changed_when: false
+  check_mode: false
+  when:
+    - not wg_priv_stat.stat.exists
+    - ansible_check_mode
+  no_log: true
+
+# Existing key path: read from remote file.
 - name: Read WireGuard private key from remote file
   ansible.builtin.slurp:
     src: "/etc/wireguard/{{ wireguard_interface }}.key"
   register: wg_priv_file
+  check_mode: false
+  when: wg_priv_stat.stat.exists
   no_log: true
 
-- name: Publish wireguard_private_key fact
+- name: Publish wireguard_private_key fact from existing file
   ansible.builtin.set_fact:
-    wireguard_private_key: "{{ (wg_priv_file.content | b64decode).strip() }}"
-  changed_when: false
+    wireguard_private_key: "{{ wg_priv_file.content | b64decode | trim }}"
+  when: wg_priv_stat.stat.exists
   no_log: true
 
-- name: Derive WireGuard public key (remote)
-  ansible.builtin.command: "sh -c 'wg pubkey < /etc/wireguard/{{ wireguard_interface }}.key'"
+- name: Publish wireguard_private_key fact from generated key
+  ansible.builtin.set_fact:
+    wireguard_private_key: "{{ wg_priv_generated.stdout | trim }}"
+  when:
+    - not wg_priv_stat.stat.exists
+    - not ansible_check_mode
+  no_log: true
+
+- name: Publish wireguard_private_key fact from temporary check-mode key
+  ansible.builtin.set_fact:
+    wireguard_private_key: "{{ wg_priv_check.stdout | trim }}"
+  when:
+    - not wg_priv_stat.stat.exists
+    - ansible_check_mode
+  no_log: true
+
+- name: Derive WireGuard public key
+  ansible.builtin.shell: "printf '%s\n' \"$WG_PRIVATE_KEY\" | wg pubkey"
+  environment:
+    WG_PRIVATE_KEY: "{{ wireguard_private_key }}"
   register: wg_pub
   changed_when: false
+  check_mode: false
   no_log: true
 
 - name: Publish wireguard_public_key fact
   ansible.builtin.set_fact:
     wireguard_public_key: "{{ wg_pub.stdout }}"
-  changed_when: false
+  no_log: true

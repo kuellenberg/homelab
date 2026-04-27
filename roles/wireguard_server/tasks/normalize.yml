@@ -1,0 +1,28 @@
+---
+- name: WireGuard server | Build effective instance list
+  ansible.builtin.set_fact:
+    wireguard_effective_instances: >-
+      {{
+        wireguard_instances
+        | default([
+            {
+              'name': wireguard_interface,
+              'interface': wireguard_interface,
+              'port': wireguard_port,
+              'address': wireguard_address,
+              'peers': wireguard_peers | default([]),
+              'port_forwards': wireguard_port_forwards | default([])
+            }
+          ])
+      }}
+
+- name: WireGuard server | Select primary interface for legacy clients
+  ansible.builtin.set_fact:
+    wireguard_primary_interface: >-
+      {{
+        wireguard_primary_interface
+        | default(
+            wireguard_interface
+            | default((wireguard_effective_instances | first).interface)
+          )
+      }}

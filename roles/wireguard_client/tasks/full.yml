@@ -2,12 +2,41 @@
 - name: Wireguard client | Install prerequisites
   ansible.builtin.include_tasks: ../wireguard_common/tasks/prerequisites.yml
 
-- name: Wireguard client | Generate WireGuard keys
-  ansible.builtin.include_tasks: ../wireguard_common/tasks/keys.yml
+- name: WireGuard client | Normalize variables
+  ansible.builtin.include_tasks: normalize.yml
 
-- name: Wireguard client | Select WireGuard config template
+- name: WireGuard client | Reset public key map
   ansible.builtin.set_fact:
-    wireguard_config_template: wg0.client.conf.j2
+    wireguard_client_public_keys: {}
 
-- name: Wireguard client | Deploy WireGuard config and service
-  ansible.builtin.include_tasks: ../wireguard_common/tasks/deploy_config.yml
+- name: WireGuard client | Generate WireGuard keys for all instances
+  ansible.builtin.include_tasks: instance_keys.yml
+  loop: "{{ wireguard_effective_instances }}"
+  loop_control:
+    loop_var: wireguard_instance
+    label: "{{ wireguard_instance.interface }}"
+
+- name: WireGuard client | Publish legacy public key for server config
+  ansible.builtin.set_fact:
+    wireguard_public_key: "{{ wireguard_client_public_keys[wireguard_primary_client_interface] }}"
+  changed_when: false
+
+- name: WireGuard client | Deploy configs for all instances
+  ansible.builtin.include_tasks: instance_config.yml
+  loop: "{{ wireguard_effective_instances }}"
+  loop_control:
+    loop_var: wireguard_instance
+    label: "{{ wireguard_instance.interface }}"
+
+- name: WireGuard client | Enable IPv4 forwarding when requested
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_forward
+    value: "1"
+    state: present
+    reload: true
+  when: >
+    wireguard_effective_instances
+    | selectattr('enable_forwarding', 'defined')
+    | selectattr('enable_forwarding')
+    | list
+    | length > 0    

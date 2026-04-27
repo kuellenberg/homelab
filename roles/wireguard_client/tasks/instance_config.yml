@@ -1,0 +1,28 @@
+---
+- name: WireGuard client | Select instance variables for config
+  ansible.builtin.set_fact:
+    wireguard_interface: "{{ wireguard_instance.interface }}"
+    wireguard_address: "{{ wireguard_instance.address }}"
+    wireguard_endpoint_host: "{{ wireguard_instance.endpoint_host }}"
+    wireguard_endpoint_port: "{{ wireguard_instance.endpoint_port }}"
+    wireguard_allowed_ips: "{{ wireguard_instance.allowed_ips }}"
+    wireguard_persistent_keepalive: "{{ wireguard_instance.persistent_keepalive | default(25) }}"
+    wireguard_masq_interface: "{{ wireguard_instance.masq_interface | default(wireguard_masq_interface | default('')) }}"
+    wireguard_enable_forwarding: "{{ wireguard_instance.enable_forwarding | default(true) }}"
+    wireguard_enable_masquerade: "{{ wireguard_instance.enable_masquerade | default(true) }}"
+    wireguard_server_interface: "{{ wireguard_instance.server_interface | default(wireguard_primary_interface | default('wg0')) }}"
+    wireguard_config_template: wg0.client.conf.j2
+
+- name: WireGuard client | Select server public key for {{ wireguard_instance.interface }}
+  ansible.builtin.set_fact:
+    wireguard_server_public_key: >-
+      {{
+        wireguard_server_public_keys[wireguard_server_interface]
+        | default(wireguard_server_public_key)
+      }}
+
+- name: WireGuard client | Read keys for {{ wireguard_instance.interface }}
+  ansible.builtin.include_tasks: ../wireguard_common/tasks/keys.yml
+
+- name: WireGuard client | Deploy config for {{ wireguard_instance.interface }}
+  ansible.builtin.include_tasks: ../wireguard_common/tasks/deploy_config.yml

@@ -1,0 +1,15 @@
+---
+- name: WireGuard server | Select instance variables for config
+  ansible.builtin.set_fact:
+    wireguard_interface: "{{ wireguard_instance.interface }}"
+    wireguard_address: "{{ wireguard_instance.address }}"
+    wireguard_port: "{{ wireguard_instance.port }}"
+    wireguard_peers: "{{ wireguard_instance.peers | default([]) }}"
+    wireguard_port_forwards: "{{ wireguard_instance.port_forwards | default([]) }}"
+    wireguard_config_template: wg0.server.conf.j2
+
+- name: WireGuard server | Read keys for {{ wireguard_instance.interface }}
+  ansible.builtin.include_tasks: ../wireguard_common/tasks/keys.yml
+
+- name: WireGuard server | Deploy config for {{ wireguard_instance.interface }}
+  ansible.builtin.include_tasks: ../wireguard_common/tasks/deploy_config.yml

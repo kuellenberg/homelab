@@ -1,0 +1,19 @@
+---
+- name: WireGuard server | Select instance variables for key handling
+  ansible.builtin.set_fact:
+    wireguard_interface: "{{ wireguard_instance.interface }}"
+    wireguard_address: "{{ wireguard_instance.address }}"
+    wireguard_port: "{{ wireguard_instance.port }}"
+    wireguard_peers: "{{ wireguard_instance.peers | default([]) }}"
+    wireguard_port_forwards: "{{ wireguard_instance.port_forwards | default([]) }}"
+
+- name: WireGuard server | Generate/read keys for {{ wireguard_instance.interface }}
+  ansible.builtin.include_tasks: ../wireguard_common/tasks/keys.yml
+
+- name: WireGuard server | Remember public key for {{ wireguard_instance.interface }}
+  ansible.builtin.set_fact:
+    wireguard_server_public_keys: >-
+      {{
+        wireguard_server_public_keys | default({})
+        | combine({ wireguard_instance.interface: wireguard_public_key })
+      }}

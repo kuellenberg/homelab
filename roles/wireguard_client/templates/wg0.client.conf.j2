@@ -2,16 +2,19 @@
 Address = {{ wireguard_address }}
 PrivateKey = {{ wireguard_private_key }}
 
-# Replaced by nftables role
-PostUp = iptables -A FORWARD -i wg0 -j ACCEPT
-PostUp = iptables -A FORWARD -o wg0 -j ACCEPT
+{% if wireguard_enable_forwarding | bool %}
+PostUp = iptables -A FORWARD -i {{ wireguard_interface }} -j ACCEPT
+PostUp = iptables -A FORWARD -o {{ wireguard_interface }} -j ACCEPT
+PostDown = iptables -D FORWARD -i {{ wireguard_interface }} -j ACCEPT
+PostDown = iptables -D FORWARD -o {{ wireguard_interface }} -j ACCEPT
+{% endif %}
+{% if wireguard_enable_masquerade | bool and wireguard_masq_interface | length > 0 %}
 PostUp = iptables -t nat -A POSTROUTING -o {{ wireguard_masq_interface }} -j MASQUERADE
-PostDown = iptables -D FORWARD -i wg0 -j ACCEPT
-PostDown = iptables -D FORWARD -o wg0 -j ACCEPT
 PostDown = iptables -t nat -D POSTROUTING -o {{ wireguard_masq_interface }} -j MASQUERADE
+{% endif %}
 
 [Peer]
-# VPS
+# VPS {{ wireguard_server_interface | default('wg0') }}
 PublicKey = {{ wireguard_server_public_key }}
 Endpoint = {{ wireguard_endpoint_host }}:{{ wireguard_endpoint_port }}
 AllowedIPs = {{ wireguard_allowed_ips | join(", ") }}

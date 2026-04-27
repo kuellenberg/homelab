@@ -2,5 +2,21 @@
 - name: Wireguard server | Install prerequisites
   ansible.builtin.include_tasks: ../wireguard_common/tasks/prerequisites.yml
 
-- name: Wireguard server | Generate WireGuard keys
-  ansible.builtin.include_tasks: ../wireguard_common/tasks/keys.yml
+- name: WireGuard server | Normalize variables
+  ansible.builtin.include_tasks: normalize.yml
+
+- name: WireGuard server | Reset public key map
+  ansible.builtin.set_fact:
+    wireguard_server_public_keys: {}
+
+- name: WireGuard server | Generate WireGuard keys for all instances
+  ansible.builtin.include_tasks: instance_keys.yml
+  loop: "{{ wireguard_effective_instances }}"
+  loop_control:
+    loop_var: wireguard_instance
+    label: "{{ wireguard_instance.interface }}"
+
+- name: WireGuard server | Publish legacy public key for existing clients
+  ansible.builtin.set_fact:
+    wireguard_public_key: "{{ wireguard_server_public_keys[wireguard_primary_interface] }}"
+  changed_when: false

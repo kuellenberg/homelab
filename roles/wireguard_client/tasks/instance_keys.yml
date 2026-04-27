@@ -1,0 +1,16 @@
+---
+- name: WireGuard client | Select instance variables for key handling
+  ansible.builtin.set_fact:
+    wireguard_interface: "{{ wireguard_instance.interface }}"
+    wireguard_address: "{{ wireguard_instance.address }}"
+
+- name: WireGuard client | Generate/read keys for {{ wireguard_instance.interface }}
+  ansible.builtin.include_tasks: ../wireguard_common/tasks/keys.yml
+
+- name: WireGuard client | Remember public key for {{ wireguard_instance.interface }}
+  ansible.builtin.set_fact:
+    wireguard_client_public_keys: >-
+      {{
+        wireguard_client_public_keys | default({})
+        | combine({ wireguard_instance.interface: wireguard_public_key })
+      }}

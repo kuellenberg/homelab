@@ -1,10 +1,13 @@
 ---
-- name: Wireguard server | Select WireGuard config template
-  ansible.builtin.set_fact:
-    wireguard_config_template: wg0.server.conf.j2
+- name: WireGuard server | Normalize variables
+  ansible.builtin.include_tasks: normalize.yml
 
-- name: Wireguard server | Deploy WireGuard config and service
-  ansible.builtin.include_tasks: ../wireguard_common/tasks/deploy_config.yml
+- name: WireGuard server | Deploy configs for all instances
+  ansible.builtin.include_tasks: instance_config.yml
+  loop: "{{ wireguard_effective_instances }}"
+  loop_control:
+    loop_var: wireguard_instance
+    label: "{{ wireguard_instance.interface }}"
 
 - name: Ensure IP forwarding is enabled (runtime)
   ansible.posix.sysctl:

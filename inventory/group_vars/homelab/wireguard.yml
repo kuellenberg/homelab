@@ -7,3 +7,32 @@ wireguard_allowed_ips:
   - "10.42.0.0/24"
 
 wireguard_persistent_keepalive: 25
+
+
+wireguard_instances:
+  - name: mngt
+    interface: wg0
+    address: "10.42.0.2/24"
+    server_interface: wg0
+    endpoint_host: "kuellenberg.eu"
+    endpoint_port: 51820
+    allowed_ips:
+      - "10.42.0.0/24"
+    persistent_keepalive: 25
+    masq_interface: eth0
+    enable_forwarding: false
+    enable_masquerade: false
+
+  - name: ha-gateway
+    interface: wg1
+    address: "10.43.0.2/24"
+    server_interface: wg1
+    endpoint_host: "kuellenberg.eu"
+    endpoint_port: 51821
+    allowed_ips:
+      - "10.43.0.0/24"
+    persistent_keepalive: 25
+    masq_interface: eth0
+    enable_forwarding: true
+    enable_masquerade: true
+    

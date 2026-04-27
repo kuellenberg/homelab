@@ -3,27 +3,36 @@ Address = {{ wireguard_address }}
 ListenPort = {{ wireguard_port }}
 PrivateKey = {{ wireguard_private_key }}
 
-#PostUp = \
-#  iptables -A FORWARD -i eth0 -o wg0 -p tcp --dport 2222 -j ACCEPT; \
-#  iptables -A FORWARD -i wg0 -o eth0 -p tcp --sport 2222 -j ACCEPT; \
-#  iptables -t nat -A PREROUTING -i eth0 -p tcp --dport 2222 -j DNAT --to-destination 10.42.0.2:2222; \
-#  iptables -t nat -A POSTROUTING -o wg0 -p tcp --dport 2222 -j MASQUERADE
-#
-#PostDown = \
-#  iptables -D FORWARD -i eth0 -o wg0 -p tcp --dport 2222 -j ACCEPT; \
-#  iptables -D FORWARD -i wg0 -o eth0 -p tcp --sport 2222 -j ACCEPT; \
-#  iptables -t nat -D PREROUTING -i eth0 -p tcp --dport 2222 -j DNAT --to-destination 10.42.0.2:2222; \
-#  iptables -t nat -D POSTROUTING -o wg0 -p tcp --dport 2222 -j MASQUERADE
+{% for forward in wireguard_port_forwards | default([]) %}
+PostUp = iptables -A FORWARD -i {{ wireguard_external_interface }} -o {{ wireguard_interface }} -p {{ forward.proto | default('tcp') }} --dport {{ forward.target_port }} -j ACCEPT
+PostUp = iptables -A FORWARD -i {{ wireguard_interface }} -o {{ wireguard_external_interface }} -p {{ forward.proto | default('tcp') }} --sport {{ forward.target_port }} -j ACCEPT
+PostUp = iptables -t nat -A PREROUTING -i {{ wireguard_external_interface }} -p {{ forward.proto | default('tcp') }} --dport {{ forward.public_port }} -j DNAT --to-destination {{ forward.target_ip }}:{{ forward.target_port }}
+PostUp = iptables -t nat -A POSTROUTING -o {{ wireguard_interface }} -p {{ forward.proto | default('tcp') }} --dport {{ forward.target_port }} -j MASQUERADE
 
-{% for host in groups['homelab'] | sort %}
+PostDown = iptables -D FORWARD -i {{ wireguard_external_interface }} -o {{ wireguard_interface }} -p {{ forward.proto | default('tcp') }} --dport {{ forward.target_port }} -j ACCEPT
+PostDown = iptables -D FORWARD -i {{ wireguard_interface }} -o {{ wireguard_external_interface }} -p {{ forward.proto | default('tcp') }} --sport {{ forward.target_port }} -j ACCEPT
+PostDown = iptables -t nat -D PREROUTING -i {{ wireguard_external_interface }} -p {{ forward.proto | default('tcp') }} --dport {{ forward.public_port }} -j DNAT --to-destination {{ forward.target_ip }}:{{ forward.target_port }}
+PostDown = iptables -t nat -D POSTROUTING -o {{ wireguard_interface }} -p {{ forward.proto | default('tcp') }} --dport {{ forward.target_port }} -j MASQUERADE
+
+{% endfor %}
+
+{% for peer in wireguard_peers | default([]) %}
 [Peer]
-# {{ host }}
-PublicKey = {{ hostvars[host].wireguard_public_key }}
-AllowedIPs = {{ ([
-  (hostvars[host].wireguard_address | regex_replace('/.*', '/32'))
-] + (hostvars[host].wireguard_extra_allowed_ips | default([]))) | join(", ") }}
-{% if wireguard_persistent_keepalive is defined %}
-PersistentKeepalive = {{ wireguard_persistent_keepalive }}
+# {{ peer.name }}
+{% if peer.public_key is defined %}
+PublicKey = {{ peer.public_key }}
+{% elif peer.name in hostvars and hostvars[peer.name].wireguard_client_public_keys is defined and (peer.interface | default(wireguard_interface)) in hostvars[peer.name].wireguard_client_public_keys %}
+PublicKey = {{ hostvars[peer.name].wireguard_client_public_keys[peer.interface | default(wireguard_interface)] }}
+{% elif peer.name in hostvars and hostvars[peer.name].wireguard_public_key is defined %}
+PublicKey = {{ hostvars[peer.name].wireguard_public_key }}
+{% else %}
+# ERROR: No public key available for peer {{ peer.name }}
+# Set peer.public_key explicitly or make sure this peer is an inventory host
+# whose client role has run before the server config is rendered.
+{% endif %}
+AllowedIPs = {{ peer.allowed_ips | join(", ") }}
+{% if peer.persistent_keepalive is defined %}
+PersistentKeepalive = {{ peer.persistent_keepalive }}
 {% endif %}
 
 {% endfor %}
