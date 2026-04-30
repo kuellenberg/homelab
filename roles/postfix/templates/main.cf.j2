@@ -29,6 +29,10 @@ inet_interfaces = {{ postfix_inet_interfaces }}
 inet_protocols = {{ postfix_inet_protocols }}
 home_mailbox = {{ postfix_home_mailbox }}
 
+{% if postfix_mailbox_transport | length > 0 %}
+mailbox_transport = {{ postfix_mailbox_transport }}
+{% endif %}
+
 milter_default_action = {{ postfix_milter_default_action }}
 milter_protocol = {{ postfix_milter_protocol }}
 smtpd_milters = {{ postfix_smtpd_milters | join(',') }}

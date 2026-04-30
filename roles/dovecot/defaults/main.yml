@@ -1,8 +1,9 @@
 ---
-
 dovecot_packages:
   - dovecot-core
   - dovecot-imapd
+  - dovecot-lmtpd
+  - dovecot-sieve
 
 dovecot_mail_location: "maildir:~/Maildir"
 
@@ -13,3 +14,16 @@ dovecot_auth_socket_path: "/var/spool/postfix/private/auth"
 dovecot_auth_socket_mode: "0660"
 dovecot_auth_socket_user: postfix
 dovecot_auth_socket_group: postfix
+
+dovecot_lmtp_socket_path: "/var/spool/postfix/private/dovecot-lmtp"
+dovecot_lmtp_socket_mode: "0600"
+dovecot_lmtp_socket_user: postfix
+dovecot_lmtp_socket_group: postfix
+
+dovecot_auth_username_format: "%Ln"
+
+dovecot_lmtp_postmaster_address: "postmaster@{{ mail_primary_domain }}"
+dovecot_lmtp_enable_sieve: true
+
+dovecot_sieve_dir: /etc/dovecot/sieve
+dovecot_sieve_before_script: /etc/dovecot/sieve/rspamd-spam.sieve

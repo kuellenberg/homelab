@@ -1,4 +1,8 @@
 ---
+- name: compile rspamd spam sieve script
+  ansible.builtin.command:
+    cmd: "sievec {{ dovecot_sieve_before_script }}"
+  listen: compile rspamd spam sieve script
 
 - name: restart dovecot
   ansible.builtin.service:

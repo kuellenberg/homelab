@@ -1,0 +1,6 @@
+protocol lmtp {
+  postmaster_address = {{ dovecot_lmtp_postmaster_address }}
+{% if dovecot_lmtp_enable_sieve %}
+  mail_plugins = $mail_plugins sieve
+{% endif %}
+}

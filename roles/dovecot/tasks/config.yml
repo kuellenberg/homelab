@@ -29,3 +29,50 @@
     mode: "0644"
     validate: "doveconf -c %s"
   notify: restart dovecot
+
+
+- name: Ensure dovecot sieve directory exists
+  ansible.builtin.file:
+    path: "{{ dovecot_sieve_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Deploy dovecot 10-auth.conf
+  ansible.builtin.template:
+    src: 10-auth.conf.j2
+    dest: /etc/dovecot/conf.d/10-auth.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart dovecot
+
+- name: Deploy dovecot 20-lmtp.conf
+  ansible.builtin.template:
+    src: 20-lmtp.conf.j2
+    dest: /etc/dovecot/conf.d/20-lmtp.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart dovecot
+
+- name: Deploy dovecot 90-sieve.conf
+  ansible.builtin.template:
+    src: 90-sieve.conf.j2
+    dest: /etc/dovecot/conf.d/90-sieve.conf
+    owner: root
+    group: root
+    mode: "0644"
+  notify: restart dovecot
+
+- name: Deploy rspamd spam sieve script
+  ansible.builtin.template:
+    src: rspamd-spam.sieve.j2
+    dest: "{{ dovecot_sieve_before_script }}"
+    owner: root
+    group: root
+    mode: "0644"
+  notify:
+    - compile rspamd spam sieve script
+    - restart dovecot  

@@ -26,6 +26,20 @@ rspamd_multimap_pharma_subject_patterns:
   - '/.*\bpotenz\b.*/i'
   - '/.*\bmanneskraft\b.*/i'
   - '/.*\b5x\b.*\bdurch\b.*/i'
+  - /.*\bmeds?\b.*/i
+  - /.*\bmedikamente?\b.*/i
+  - /.*\bapotheke\b.*/i
+  - /.*\bdoktor\b.*/i
+  - /.*\bausdauer\b.*\bbett\b.*/i
+  - /.*\bbett\b.*\bausdauer\b.*/i
+  - /.*\bre[\W_]*zept[\W_]*frei\b.*/i
+  - /.*\br[\W_]*ezept[\W_]*frei\b.*/i
+  - /.*\bordern\b.*/i
+  - /.*\bbestellen\b.*/i
+  - /.*\bblutdruck\b.*/i
+  - /.*\bnagelpilz\b.*/i
+  - /.*\babnehmziele\b.*/i
+  - /.*\bsema\s*7\b.*/i
 
 rspamd_multimap_scam_subject_patterns:
   - '/.*\bwarnung\b.*cloud-speicher.*/i'
@@ -35,6 +49,17 @@ rspamd_multimap_scam_subject_patterns:
   - '/.*\baktualisierung\b.*\bfreigabeumgebung\b.*/i'
   - '/.*\bdkb\b.*\bhinweis\b.*/i'
   - '/.*\beasybank\b.*\bdaten\b.*/i'
+  - /.*\bsecurego\b.*/i
+  - /.*\bfreigabeumgebung\b.*/i
+  - /.*\bkreditkarte\b.*\baktivieren\b.*/i
+  - /.*\bdkb\b.*\bbank\b.*/i
+  - /.*\beasybank\b.*/i
+  - /.*\bnorton\b.*\blife\s*lock\b.*/i
+  - /.*\bservice confirmation\b.*/i
+  - /.*\bcloud-speicher\b.*\bvoll\b.*/i
+  - /.*\bihr cloud-speicher ist voll\b.*/i
+  - /.*\brückerstattung\b.*/i
+  - /.*\bbestätigen sie ihre daten\b.*/i
 
 rspamd_multimap_clickbait_subject_patterns:
   - '/.*\bbekannt aus tv\b.*/i'
@@ -44,3 +69,16 @@ rspamd_multimap_clickbait_subject_patterns:
   - '/.*\bneuer trend\b.*/i'
   - '/.*\bblitzer erkennen\b.*/i'
   - '/.*\bstrafzettel\b.*/i'
+  - /.*\bblitzer\b.*/i
+  - /.*\bstrafzettel\b.*/i
+  - /.*\bautodiebstahl\b.*/i
+  - /.*\bneuer trend\b.*/i
+  - /.*\bnotaufnahme\b.*/i
+  - /.*\bkühlschrank\b.*\bnotaufnahme\b.*/i
+  - /.*\bkompressionsstrümpfe\b.*/i
+  - /.*\bmüden beine\b.*/i
+  - /.*\bkörperhaltung\b.*/i
+  - /.*\brücken\b.*/i
+  - /.*\bbrillenübersetzer\b.*/i
+  - /.*\bki-sprachassistent\b.*/i
+  - /.*\bansehen bevor es gelöscht wird\b.*/i

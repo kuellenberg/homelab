@@ -1,0 +1,11 @@
+require ["fileinto", "mailbox"];
+
+if anyof (
+  header :contains "X-Rspamd-Action" "add header",
+  header :contains "X-Spamd-Result" "PHARMA_SUBJECT",
+  header :contains "X-Spamd-Result" "SCAM_SUBJECT",
+  header :contains "X-Spamd-Result" "CLICKBAIT_SUBJECT"
+) {
+  fileinto :create "Junk";
+  stop;
+}

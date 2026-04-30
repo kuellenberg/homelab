@@ -5,3 +5,11 @@ service auth {
     group = {{ dovecot_auth_socket_group }}
   }
 }
+
+service lmtp {
+  unix_listener {{ dovecot_lmtp_socket_path }} {
+    mode = {{ dovecot_lmtp_socket_mode }}
+    user = {{ dovecot_lmtp_socket_user }}
+    group = {{ dovecot_lmtp_socket_group }}
+  }
+}
