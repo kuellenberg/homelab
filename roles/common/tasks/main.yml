@@ -8,7 +8,7 @@
 
 - name: Base System Setup
   ansible.builtin.import_tasks: base.yml
-  tags: 
+  tags:
     - base
     - common
 

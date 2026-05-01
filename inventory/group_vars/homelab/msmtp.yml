@@ -1,11 +1,11 @@
 msmtp_:
-  account: "strato"
-  smtp_server: "smtp.strato.de"
+  account: "mail.ondre.de"
+  smtp_server: "mail.ondre.de"
   smtp_port: "587"
-  smtp_user: "ondre@ondre.de"
-  smtp_pass: "{{ vault_msmtp_strato_smtp_pass }}"
+  smtp_user: "ondre"
+  smtp_pass: "{{ vault_msmtp_ondre_smtp_pass }}"
   start_tls: "on"
-  from_address: "ganzgrosseskino@ondre.de"
+  from_address: "smallbox@ondre.de"
 
   users:
     - owner: "nut"
@@ -17,4 +17,4 @@ msmtp_:
       group: "root"
       mode: "0600"
       dest: "/etc/msmtprc"
-      from_address: "root@ondre.de"
+      from_address: "smallbox@ondre.de"

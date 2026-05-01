@@ -20,3 +20,5 @@
       tags: ['snappymail']
     - role: faintphotons
       tags: ['faintphotons']
+    - role: fail2ban
+      tags: ['fail2ban']

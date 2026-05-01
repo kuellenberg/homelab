@@ -40,3 +40,17 @@
     mode: "0440"
     validate: "visudo -cf %s"
   when: vps_admin_sudo_nopasswd | bool
+
+- name: Install SSH hardening drop-in
+  become: true
+  ansible.builtin.copy:
+    dest: /etc/ssh/sshd_config.d/20-vps-base-hardening.conf
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      PermitRootLogin no
+      PasswordAuthentication no
+      KbdInteractiveAuthentication no
+      PubkeyAuthentication yes
+  notify: Validate and reload ssh

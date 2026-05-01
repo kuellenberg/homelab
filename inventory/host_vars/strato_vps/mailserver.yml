@@ -20,7 +20,7 @@ mail_users:
     create_home: true
 
 mail_aliases_local:
-  - aliases: ["info", "moobert", "zemightyone","kloetenthaler", "fickbert", "fckbrt", "postmaster", "abuse"]
+  - aliases: ["info", "moobert", "zemightyone","kloetenthaler", "fickbert", "fckbrt", "postmaster", "abuse", "smallbox", "reaktorunfall"]
     targets: ["ondre"]
   - aliases: ["pommel", "mohre"]
     targets: ["hasi"]

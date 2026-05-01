@@ -1,5 +1,4 @@
 ---
-
-admin_user: "ondre"
+admin_user: ""
 vps_admin_ssh_keys: []
 vps_admin_sudo_nopasswd: true

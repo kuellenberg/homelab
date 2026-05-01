@@ -13,3 +13,16 @@
   ansible.builtin.service:
     name: dovecot
     state: reloaded
+
+- name: Validate fail2ban config
+  become: true
+  ansible.builtin.command: fail2ban-client -t
+  changed_when: false
+  listen: Validate and reload fail2ban
+
+- name: Reload fail2ban
+  become: true
+  ansible.builtin.service:
+    name: fail2ban
+    state: reloaded
+  listen: Validate and reload fail2ban

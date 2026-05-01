@@ -75,4 +75,4 @@
     mode: "0644"
   notify:
     - compile rspamd spam sieve script
-    - restart dovecot  
+    - restart dovecot
